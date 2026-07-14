@@ -10,6 +10,8 @@ from .boottimeout import BootTimeout
 
 from .bootorder import BootOrder
 
+from .bootmanager import BootManager
+
 __all__ = [
     "Configuration",
     "BootCurrent",
@@ -17,4 +19,5 @@ __all__ = [
     "BootEntry",
     "BootTimeout",
     "BootOrder",
+    "BootManager",
 ]
