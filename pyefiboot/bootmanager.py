@@ -1,17 +1,17 @@
 import logging
-import pyefiboot
+from pyefiboot import Configuration, BootCurrent, BootNext, BootTimeout, BootOrder, BootEntry
 
 
 class BootManager:
     def __init__(self):
         self.__log = logging.getLogger(self.__class__.__name__)
 
-        self.boot_current: pyefiboot.BootCurrent | None = None
-        self.boot_next: pyefiboot.BootNext | None = None
-        self.boot_timeout: pyefiboot.BootTimeout | None = None
-        self.boot_order: pyefiboot.BootOrder | None = None
-        self.boot_entries: dict[str, pyefiboot.BootEntry] = {}
-        self.kernel_entries: dict[str, pyefiboot.BootEntry] = {}
+        self.boot_current: BootCurrent | None = None
+        self.boot_next: BootNext | None = None
+        self.boot_timeout: BootTimeout | None = None
+        self.boot_order: BootOrder | None = None
+        self.boot_entries: dict[str, BootEntry] = {}
+        self.kernel_entries: dict[str, BootEntry] = {}
 
     def _create_class_or_none(self, cls, log_warning: bool = True, *args, **kwargs):
         try:
@@ -22,13 +22,13 @@ class BootManager:
 
     def update_from_efi(self):
         # Read basic EFI Boot variables
-        self.boot_current = self._create_class_or_none(pyefiboot.BootCurrent)
-        self.boot_next = self._create_class_or_none(pyefiboot.BootNext, log_warning=False)
-        self.boot_timeout = self._create_class_or_none(pyefiboot.BootTimeout)
-        self.boot_order = self._create_class_or_none(pyefiboot.BootOrder)
+        self.boot_current = self._create_class_or_none(BootCurrent)
+        self.boot_next = self._create_class_or_none(BootNext, log_warning=False)
+        self.boot_timeout = self._create_class_or_none(BootTimeout)
+        self.boot_order = self._create_class_or_none(BootOrder)
 
-        for boot_entry_file in sorted(pyefiboot.Configuration().efivarfs_path.glob('Boot[!N]???-*')):
-            entry = pyefiboot.BootEntry(efivar_fullpath=boot_entry_file)
+        for boot_entry_file in sorted(Configuration().efivarfs_path.glob('Boot[!N]???-*')):
+            entry = BootEntry(efivar_fullpath=boot_entry_file)
             self.boot_entries[entry.entry_num] = entry
             if entry.kernel_file:
                 self.kernel_entries[entry.kernel_file] = entry
