@@ -19,4 +19,4 @@ class BootOrder(EFIVarIntList):
 
     def __str__(self) -> str:
         """:return: Default string representation of the Boot Order"""
-        return f'BootOrder: {self.value}'
+        return f'BootOrder: {self.hex_value}'

@@ -36,7 +36,10 @@ class EFIVarIntList(EFIVarBase):
 
     @property
     def value(self) -> list[int]:
-        """
-        :return: Return integer value of the read EFI Variable
-        """
+        """:return: Return list of integer values of the read EFI Variable"""
         return self.__value
+
+    @property
+    def hex_value(self) -> str:
+        """:return: Hexadecimal list representation of the read EFI Variable"""
+        return ','.join(f'{value:04x}' for value in self.__value)
