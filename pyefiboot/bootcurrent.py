@@ -19,4 +19,4 @@ class BootCurrent(EFIVarInt):
 
     def __str__(self) -> str:
         """:return: Default string representation of the Boot Current"""
-        return f'BootCurrent: {self.value}'
+        return f'BootCurrent: {self.hex_value}'

@@ -19,4 +19,4 @@ class BootNext(EFIVarInt):
 
     def __str__(self) -> str:
         """:return: Default string representation of the Boot Next"""
-        return f'BootNext: {self.value}'
+        return f'BootNext: {self.hex_value}'

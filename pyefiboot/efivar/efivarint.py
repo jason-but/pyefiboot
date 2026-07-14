@@ -39,3 +39,7 @@ class EFIVarInt(EFIVarBase):
         :return: Return integer value of the read EFI Variable
         """
         return self.__value
+
+    @property
+    def hex_value(self) -> str:
+        return f'{self.__value:04x}'
