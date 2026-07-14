@@ -35,11 +35,10 @@ class EFIVarInt(EFIVarBase):
 
     @property
     def value(self) -> int:
-        """
-        :return: Return integer value of the read EFI Variable
-        """
+        """:return: Return integer value of the read EFI Variable"""
         return self.__value
 
     @property
     def hex_value(self) -> str:
+        """:return: Hexadecimal representation of the read EFI Variable"""
         return f'{self.__value:04x}'
