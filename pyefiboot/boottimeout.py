@@ -19,4 +19,4 @@ class BootTimeout(EFIVarInt):
 
     def __str__(self) -> str:
         """:return: Default string representation of the Boot Timeout"""
-        return f'BootTimeout: {self.hex_value}'
+        return f'BootTimeout: {self.hex_value} seconds'
