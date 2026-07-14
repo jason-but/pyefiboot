@@ -25,7 +25,7 @@ import pyefiboot
 
 bootmgr = pyefiboot.BootManager()
 
-bootmgr.update()
+bootmgr.update_from_efi()
 ```
 
 ### Printing to screen
