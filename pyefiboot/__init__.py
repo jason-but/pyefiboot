@@ -1,6 +1,6 @@
 from .configuration import Configuration
 
-from bootcurrent import BootCurrent
+from .bootcurrent import BootCurrent
 
 from .bootnext import BootNext
 

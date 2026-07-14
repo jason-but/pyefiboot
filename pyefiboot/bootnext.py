@@ -16,3 +16,7 @@ class BootNext(EFIVarInt):
         Inherit from the base class to read the Next variable
         """
         super().__init__(efivar_name='BootNext')
+
+    def __str__(self) -> str:
+        """:return: Default string representation of the Boot Next"""
+        return f'BootNext: {self.value}'

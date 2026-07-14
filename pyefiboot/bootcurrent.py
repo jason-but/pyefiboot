@@ -16,3 +16,7 @@ class BootCurrent(EFIVarInt):
         Inherit from the base class to read the Current variable
         """
         super().__init__(efivar_name='BootCurrent')
+
+    def __str__(self) -> str:
+        """:return: Default string representation of the Boot Current"""
+        return f'BootCurrent: {self.value}'

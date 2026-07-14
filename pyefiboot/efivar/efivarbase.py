@@ -38,5 +38,8 @@ class EFIVarBase:
         fullpath = pathlib.Path(Configuration().efivarfs_path, f'{efivar_name}-{Configuration().efi_global_guid}') if efivar_name else efivar_fullpath
         self._log.debug(f'Setting EFI variable path to "{fullpath}"')
 
+        self.efivar_name = fullpath.name.split('-', 1)[0]
+
+        self._log.info(f'EFI variable name: "{self.efivar_name}"')
         self._raw_data = fullpath.read_bytes()[4:]
         self._log.debug(f'Raw EFI Variable Data: {self._raw_data}')

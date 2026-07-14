@@ -35,6 +35,8 @@ class BootEntry(EFIVarBase):
 
         super().__init__(efivar_name, efivar_fullpath)
 
+        self.__entry_num: str = self.efivar_name[4:]
+
         # Ignore first four bytes of file
         data = self._raw_data
 
@@ -70,10 +72,20 @@ class BootEntry(EFIVarBase):
         """
         :return: Default string representation of the Boot Entry
         """
-        return f'{'*' if self.is_active else ''} {self.label}'
+        return f'Boot{self.__entry_num}{'*' if self.is_active else ''} {self.label}'
 
     def verbose_str(self) -> str:
         """
         :return: Verbose string representation of the Boot Entry
         """
         return f'{self} - {self.path_list} - Extra({self.optional_data})'
+
+    @property
+    def entry_num(self) -> str:
+        """:return: Boot Entry index number as a four character hexadecimal string"""
+        return self.__entry_num
+
+    @property
+    def kernel_file(self) -> str | None:
+        """:return: Boot Entry kernel file to load if it exists, otherwise None"""
+        return self.path_list.kernel_file

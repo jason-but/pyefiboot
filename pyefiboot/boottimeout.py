@@ -16,3 +16,7 @@ class BootTimeout(EFIVarInt):
         Inherit from the base class to read the Timeout variable
         """
         super().__init__(efivar_name='Timeout')
+
+    def __str__(self) -> str:
+        """:return: Default string representation of the Boot Timeout"""
+        return f'BootTimeout: {self.value}'
