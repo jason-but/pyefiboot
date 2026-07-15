@@ -60,12 +60,12 @@ class HardwareVendorDevice_1_4(BaseNodePathParser):
     """Hardware (Vendor) Device Path Parser"""
     def __init__(self, node_data: bytes):
         """:param node_data: Python bytes object containing data to be parsed"""
-        super().__init__(node_data, '<II')
+        super().__init__(node_data, '<16s')
 
         self._log.debug('Hardware (Vendor) Device Path')
 
-        self.__vendor_guid = str(uuid.UUID(bytes_le=node_data[:16]))
-        self.__vendor_data = node_data[16:].decode('utf-16le', errors='ignore').strip('\x00')
+        self.__vendor_guid = str(uuid.UUID(bytes_le=self._fields[0]))
+        self.__vendor_data = self._unpacked_data.decode('utf-16le', errors='ignore').strip('\x00')
 
     def __str__(self) -> str:
         """:return: String representation of the Vendor Node"""

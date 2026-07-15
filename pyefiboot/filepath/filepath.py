@@ -11,6 +11,7 @@ from .hardware_device_path import *
 from .acpi_device_path import *
 from .messaging_device_path import *
 from .media_device_path import *
+from .bios_device_path import *
 
 
 class FilePath:
@@ -28,6 +29,7 @@ class FilePath:
         2: ACPI_DEVICE_REGISTRY,
         3: MESSAGING_DEVICE_REGISTRY,
         4: MEDIA_DEVICE_REGISTRY,
+        5: BIOS_DEVICE_REGISTRY,
     }
 
     def __init__(self, path_list_data: bytes) -> None:
