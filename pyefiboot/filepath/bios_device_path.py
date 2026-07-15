@@ -21,8 +21,6 @@ class BIOS_BootDevice_5_1(BaseNodePathParser):
 
         self.__type, self.__flag = self._fields
         self.__description = self._unpacked_data.split(b'\x00', 1)[0].decode('ascii')
-        print(f'FIELDS: {self._fields} - {self.__type}, {self.__flag}')
-        print(f'UNPACKED: {self._unpacked_data}')
 
     def __str__(self) -> str:
         """:return: String representation of the ATAPI Node"""
