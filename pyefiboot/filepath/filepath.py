@@ -86,16 +86,8 @@ class FilePath:
             return
 
         try:
-            # Get class details to process this node, if KeyError is raised this is an unknown node
-            device_details = FilePath.DEVICE_REGISTRY[node_type][node_subtype]
-            self.__log.info(f'Node Parser: {device_details}')
-
-            # If node type has fixed size, check and confirm
-            if device_details['len'] > 0 and node_len != device_details['len']:
-                raise ValueError(f'Node len must be {device_details['len']} bytes')
-
             # Create the class to parse the node payload and append to the path list
-            self.__path_lists[-1].append(device_details['class'](node_payload))
+            self.__path_lists[-1].append(FilePath.DEVICE_REGISTRY[node_type][node_subtype](node_payload))
             self.__log.info(f'New Node: {self.__path_lists[-1][-1]}')
 
         except KeyError:

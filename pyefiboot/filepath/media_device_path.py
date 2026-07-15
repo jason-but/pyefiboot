@@ -5,18 +5,21 @@ Each class parses a single node, providing a string representation for display p
 """
 # Import System Libraries
 import struct
-import logging
 import uuid
 
+# Import BaseNodePathParser sub-module classes
+from .basenodepathparser import BaseNodePathParser
 
-class MDP_4_1_HD:
+
+class MediaHardDiskDevice_4_1(BaseNodePathParser):
     """Media (Hard Disk) Device Path Parser"""
     def __init__(self, node_data: bytes):
         """:param node_data: Python bytes object containing data to be parsed"""
-        self.__log = logging.getLogger(self.__class__.__name__)
-        self.__log.debug('Media (Hard Disk) Device Path')
+        super().__init__(node_data, '<IQQ16sBB')
 
-        self.__part_no, self.__part_start, self.__part_size, part_sig, self.__part_format, self.__sig_type = struct.unpack('<IQQ16sBB', node_data)
+        self._log.debug('Media (Hard Disk) Device Path')
+
+        self.__part_no, self.__part_start, self.__part_size, part_sig, self.__part_format, self.__sig_type = self._fields
 
         self.__signature = ''
 
@@ -33,14 +36,15 @@ class MDP_4_1_HD:
         return f'HD(part={self.__part_no}<{self.__part_start:#x},{self.__part_size:#x}>,{self.__part_format},sig={self.__signature})'
 
 
-class MDP_4_2_CD:
+class MediaCDDevice_4_2(BaseNodePathParser):
     """Media (CD) Device Path Parser"""
     def __init__(self, node_data: bytes):
         """:param node_data: Python bytes object containing data to be parsed"""
-        self.__log = logging.getLogger(self.__class__.__name__)
-        self.__log.debug('Media (CD) Device Path')
+        super().__init__(node_data, '<LQQ')
 
-        self.__number, self.__part_start, self.__part_size, part_sig, self.__part_format, self.__sig_type = struct.unpack('<LQQ', node_data)
+        self._log.debug('Media (CD) Device Path')
+
+        self.__number, self.__part_start, self.__part_size, part_sig, self.__part_format, self.__sig_type = self._fields
 
         self.__signature = ''
 
@@ -57,14 +61,14 @@ class MDP_4_2_CD:
         return f'HD(part={self.__part_no}<{self.__part_start:#x},{self.__part_size:#x}>, {self.__part_format}, sig={self.__signature})'
 
 
-class MDP_4_4_File:
+class MediaFileDevice_4_4(BaseNodePathParser):
     """Media (File) Device Path Parser"""
     def __init__(self, node_data: bytes):
         """:param node_data: Python bytes object containing data to be parsed"""
-        self.__log = logging.getLogger(self.__class__.__name__)
-        self.__log.debug('Media (File) Device Path')
+        super().__init__(node_data, '')
+        self._log.debug('Media (File) Device Path')
 
-        self.__file_path = node_data.decode("utf-16le", errors='ignore')
+        self.__file_path = self._unpacked_data.decode("utf-16le", errors='ignore')
 
     def __str__(self) -> str:
         """:return: String representation of the File Node"""
@@ -77,7 +81,7 @@ class MDP_4_4_File:
 
 # Class factory registration mapping Hardware Device node subtypes to the class for construction
 MEDIA_DEVICE_REGISTRY = {
-    1: {'len': 42, 'class': MDP_4_1_HD},
-    2: {'len': 24, 'class': MDP_4_2_CD},
-    4: {'len': 0, 'class': MDP_4_4_File},
+    1: MediaHardDiskDevice_4_1,
+    2: MediaCDDevice_4_2,
+    4: MediaFileDevice_4_4,
 }

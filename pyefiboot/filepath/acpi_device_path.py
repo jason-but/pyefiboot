@@ -3,19 +3,19 @@ This file implements the ACPI Device Path (File Path Node parsing) classes withi
 
 Each class parses a single node, providing a string representation for display purposes
 """
-# Import System Libraries
-import struct
-import logging
+# Import BaseNodePathParser sub-module classes
+from .basenodepathparser import BaseNodePathParser
 
 
-class ADP_2_1_ACPI:
+class ACPI_ACPIDevice_2_1(BaseNodePathParser):
     """ACPI (ACPI) Device Path Parser"""
     def __init__(self, node_data: bytes):
         """:param node_data: Python bytes object containing data to be parsed"""
-        self.__log = logging.getLogger(self.__class__.__name__)
-        self.__log.debug('ACPI (ACPI) Device Path')
+        super().__init__(node_data, '<II')
 
-        self.__hid, self.__uid = struct.unpack('<II', node_data)
+        self._log.debug('ACPI (ACPI) Device Path')
+
+        self.__hid, self.__uid = self._fields
 
     def __str__(self) -> str:
         """:return: String representation of the ATAPI Node"""
@@ -24,5 +24,5 @@ class ADP_2_1_ACPI:
 
 # Class factory registration mapping ACPI Device node subtypes to the class for construction
 ACPI_DEVICE_REGISTRY = {
-    1: {'len': 12, 'class': ADP_2_1_ACPI},
+    1: ACPI_ACPIDevice_2_1,
 }
