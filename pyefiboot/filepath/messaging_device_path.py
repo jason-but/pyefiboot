@@ -85,6 +85,21 @@ class MessagingUSBDevice_3_5(BaseNodePathParser):
         return f'USB({self.__port:#04x},{self.__interface:#04x})'
 
 
+class MessagingI2ODevice_3_10(BaseNodePathParser):
+    """Messaging (I2O Random Block Storage) Device Path Parser"""
+    def __init__(self, node_data: bytes):
+        """:param node_data: Python bytes object containing data to be parsed"""
+        super().__init__(node_data, '<L')
+
+        self._log.debug('Messaging (I2O Random Block Storage) Device Path')
+
+        self.__tid, = self._fields
+
+    def __str__(self) -> str:
+        """:return: String representation of the MAC Node"""
+        return f'I2O(ID:{self.__tid})'
+
+
 class MessagingMACDevice_3_11(BaseNodePathParser):
     """Messaging (MAC) Device Path Parser"""
     def __init__(self, node_data: bytes):
@@ -149,6 +164,21 @@ class MessagingIPv6Device_3_13(BaseNodePathParser):
         return f'IPv6(local={self.__laddr}/{self.__prefix}:{self.__lport},{self.__origin},remote={self.__raddr}:{self.__rport},gateway={self.__gateway})'
 
 
+class MessagingNVMExpressDevice_3_23(BaseNodePathParser):
+    """Messaging (USB) Device Path Parser"""
+    def __init__(self, node_data: bytes):
+        """:param node_data: Python bytes object containing data to be parsed"""
+        super().__init__(node_data, '<LQ')
+
+        self._log.debug('Messaging (USB) Device Path')
+
+        self.__namespace_id, self.__extended_uid = self._fields
+
+    def __str__(self) -> str:
+        """:return: String representation of the USB Node"""
+        return f'NVME({self.__namespace_id:#010x},{self.__extended_uid:#018x})'
+
+
 # Class factory registration mapping Messaging Device node subtypes to the class for construction
 MESSAGING_DEVICE_REGISTRY = {
     1: MessagingATAPIDevice_3_1,
@@ -156,7 +186,9 @@ MESSAGING_DEVICE_REGISTRY = {
     3: MessagingFibreChannelDevice_3_3,
     4: MessagingI394Device_3_4,
     5: MessagingUSBDevice_3_5,
+    10: None,
     11: MessagingMACDevice_3_11,
     12: MessagingIPv4Device_3_12,
-    13: MessagingIPv6Device_3_13
+    13: MessagingIPv6Device_3_13,
+    23: MessagingNVMExpressDevice_3_23,
 }

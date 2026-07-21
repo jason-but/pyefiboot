@@ -72,7 +72,6 @@ if __name__ == '__main__':
     try:
         # Parse all command line arguments, if the '-c' argument exists, load the Configuration file now, otherwise it will be loaded by the submodules using default properties
         arguments = parse_arguments()
-        print(arguments)
 
         if arguments.efifs_path: Configuration.efivarfs_path = arguments.efifs_path
         if arguments.global_guid: Configuration.efi_global_guid = arguments.global_guid

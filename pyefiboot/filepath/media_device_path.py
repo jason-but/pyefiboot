@@ -79,9 +79,39 @@ class MediaFileDevice_4_4(BaseNodePathParser):
         return self.__file_path
 
 
+class MediaPIFirmwareFileDevice_4_6(BaseNodePathParser):
+    """Media (PIWG Firmware File) Device Path Parser"""
+    def __init__(self, node_data: bytes):
+        """:param node_data: Python bytes object containing data to be parsed"""
+        super().__init__(node_data, '')
+        self._log.debug('Media (PIWG Firmware File) Device Path')
+
+        self.__path = uuid.UUID(bytes_le=self._unpacked_data)
+
+    def __str__(self) -> str:
+        """:return: String representation of the File Node"""
+        return f'FirmwareFile({self.__path})'
+
+
+class MediaPIFirmwareVolumeDevice_4_7(BaseNodePathParser):
+    """Media (PIWG Firmware Volume) Device Path Parser"""
+    def __init__(self, node_data: bytes):
+        """:param node_data: Python bytes object containing data to be parsed"""
+        super().__init__(node_data, '')
+        self._log.debug('Media (PIWG Firmware Volume) Device Path')
+
+        self.__path = uuid.UUID(bytes_le=self._unpacked_data)
+
+    def __str__(self) -> str:
+        """:return: String representation of the File Node"""
+        return f'FirmwareVolume({self.__path})'
+
+
 # Class factory registration mapping Hardware Device node subtypes to the class for construction
 MEDIA_DEVICE_REGISTRY = {
     1: MediaHardDiskDevice_4_1,
     2: MediaCDDevice_4_2,
     4: MediaFileDevice_4_4,
+    6: MediaPIFirmwareFileDevice_4_6,
+    7: MediaPIFirmwareVolumeDevice_4_7
 }

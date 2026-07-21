@@ -10,7 +10,7 @@ from .basenodepathparser import BaseNodePathParser
 class BIOS_BootDevice_5_1(BaseNodePathParser):
     """BIOS (BIOS Boot Specification) Device Path Parser"""
 
-    # Lookup table mapping BUIS Device Type to string description
+    # Lookup table mapping BIOS Device Type to string description
     type_lookup = {0x00: 'Reserved', 0x01: 'Floppy', 0x02: 'HardDisk', 0x03: 'CD-ROM', 0x04: 'PCMCIA', 0x05: 'USB', 0x06: 'Embedded Network', 0x80: 'BEV'}
 
     def __init__(self, node_data: bytes):
@@ -24,7 +24,7 @@ class BIOS_BootDevice_5_1(BaseNodePathParser):
 
     def __str__(self) -> str:
         """:return: String representation of the ATAPI Node"""
-        return f'BIOS({BIOS_BootDevice_5_1.type_lookup[self.__type]},{self.__description},{self.__flag:#06x})'
+        return f'BIOS({BIOS_BootDevice_5_1.type_lookup.get(self.__type, 'Unknown')},{self.__description},{self.__flag:#06x})'
 
 
 # Class factory registration mapping ACPI Device node subtypes to the class for construction
