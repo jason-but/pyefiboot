@@ -44,6 +44,27 @@ def __validate_bootnum_param(param: int | str) -> str:
     raise ValueError(f'Provided parameter({param} must be integer or string containing hexadecimal value in range 0x0000-0xffff')
 
 
+def set_timeout(seconds: int):
+    """
+    Set the EFI Timeout variable to "seconds" seconds
+
+    :param seconds: Integer value for the EFI Timeout variable
+    """
+    if not isinstance(seconds, int):
+        raise TypeError(f'Provided parameter({seconds} must be integer value representing timeout to set in seconds')
+
+    __log.debug(f'Setting EFI Timeout to {seconds}')
+    __execute_efibootmgr(['--timeout', f'{seconds}'])
+
+
+def delete_timeout():
+    """
+    Delete the currently set EFI Timeout
+    """
+    __log.debug('Removing EFI Timeout variable')
+    __execute_efibootmgr(['--delete-timeout'])
+
+
 def set_boot_next(entry: int | str):
     """
     Set the BootNext variable to entry
@@ -102,46 +123,10 @@ def delete_entry(entry: int | str):
     __execute_efibootmgr(['--delete-bootnum', '--bootnum', entry])
 
 
-def add_entry(self, kernel):
+def add_entry(kernel):
     pass
     # print_command('Adding EFI Entry')
     # result = subprocess.run([ '/usr/sbin/efibootmgr', '--create-only', '--disk', self.bootdisk.get_disk(), '--part', self.bootdisk.get_partition(), '--label', kernel.efilabel, '--loader', kernel.efifile, '--unicode', kernel.efiextra ], capture_output=True, text=True)
     #
     # if result.returncode != 0: raise Exception(f'Error running efibootmgr\n\n{result.stderr}')
     # print_result(f'Label({kernel.efilabel}) InitRD({kernel.initrd_file})')
-
-
-####################################################################################################
-## The efibootmgr class allows for reading the current contents of the EFI Boot Table and to make ##
-## updates. It only cares about boot entries for ondisk EFI stub loaders                          ##
-##                                                                                                ##
-## Member methods:                                                                                ##
-##   efibootmgr()                - Retrieve the current contents of the EFI boot table            ##
-##   get_kernellist()            - Return a list of kernel file names as identified in EFI        ##
-##   update(kernel_file, kernel) - Update the EFI table entry for the provided kernel filename    ##
-##                                 (kernel_file) and kernel instance (kernel). kernel is None if  ##
-##                                 the kernel does not exist on disk                              ##
-##   update_bootorder()          - Update EFI boot order to be installed kernel versions in       ##
-##                                 descending order, followed by any pre-existing boot order      ##
-##                                 values that do not refer to an ondisk kernel                   ##
-##   display()                   - Dump the boot table to screen                                  ##
-####################################################################################################
-class efibootmgr:
-    def __init__(self, efidisk):
-        """
-        Initialise efibootmgr class
-
-        Retrieve the current contents of the EFI boot table via _read_efi() and set the unchanged flag to True. This flag is cleared if we actually update an
-        EFI boot table entry so we can determine if/when the boot order also needs to be updated
-        :param efidisk:
-        """
-        self.__log = logging.getLogger(self.__class__.__name__)
-
-        self.__efibootmgr_cmd = shutil.which('efibootmgr')
-        if self.__efibootmgr_cmd is None:
-            raise RuntimeError(f'The "efibootmgr" executable could not be found on your system')
-
-        self.bootdisk = efidisk
-
-        self.efi_unchanged = True
-

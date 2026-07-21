@@ -35,11 +35,14 @@ class EFIVarIntList(EFIVarBase):
         self._log.info(f'Read integer list: {self.__value}')
 
     @property
-    def value(self) -> list[int]:
+    def value(self) -> list[int] | None:
         """:return: Return list of integer values of the read EFI Variable"""
         return self.__value
 
     @property
     def hex_value(self) -> str:
         """:return: Hexadecimal list representation of the read EFI Variable"""
+        if self.__value is None:
+            return '<No Value>'
+
         return ','.join(f'{value:04x}' for value in self.__value)
