@@ -41,5 +41,10 @@ class EFIVarBase:
         self.efivar_name = fullpath.name.split('-', 1)[0]
 
         self._log.info(f'EFI variable name: "{self.efivar_name}"')
-        self._raw_data = fullpath.read_bytes()[4:]
+        self._raw_data: bytes | None = None
+        try:
+            self._raw_data = fullpath.read_bytes()[4:]
+        except FileNotFoundError:
+            self._log.info(f'EFI variable "{self.efivar_name}" not found, value set to None')
+
         self._log.debug(f'Raw EFI Variable Data: {self._raw_data}')
