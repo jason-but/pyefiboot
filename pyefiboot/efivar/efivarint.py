@@ -30,15 +30,17 @@ class EFIVarInt(EFIVarBase):
         """
         super().__init__(efivar_name, efivar_fullpath)
 
-        self.__value = int.from_bytes(self._raw_data, 'little')
+        self.__value = int.from_bytes(self._raw_data, 'little') if self._raw_data else None
         self._log.info(f'Read integer value: {self.__value}')
 
     @property
-    def value(self) -> int:
+    def value(self) -> int | None:
         """:return: Return integer value of the read EFI Variable"""
         return self.__value
 
     @property
     def hex_value(self) -> str:
         """:return: Hexadecimal representation of the read EFI Variable"""
+        if self.__value is None:
+            return '<No Value>'
         return f'{self.__value:04x}'
