@@ -3,8 +3,6 @@ This file implements the BootNext class within the pyefiboot library
 
 BootNext provides access to the current value of the BootNext EFI Variable
 """
-from unittest import case
-
 # Import efivar modules and classes
 import pyefiboot.efibootmgr as efibootmgr
 from pyefiboot.efivar import EFIVarInt
@@ -39,4 +37,3 @@ class BootNext(EFIVarInt):
             efibootmgr.set_boot_next(new_value)
 
         self.__value = int(new_value, base=16) if isinstance(new_value, str) else new_value
-
