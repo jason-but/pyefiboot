@@ -147,7 +147,7 @@ Upon creation will read the current value of the UEFI BootOrder variable. If the
 | Property Name | Type                                 | Action  | Description                                                                                                                                      |
 |:--------------|:-------------------------------------|:--------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
 | `value`       | `list[int]` or `None`                | Read    | <ul><li>Return list of Boot Entry indexes as integers</li><li>Return `None` if variable does not exist</li></ul>                                 |
-| `value`       | `list[int]` or 'list[str]' or `None` | Write   | <ul><li>Set the Boot Order to the provided list of integers OR hex strings</li><li>Delete the UEFI BootOrder variable if set to `None`</li></ul> |
+| `value`       | `list[int]` or `list[str]` or `None` | Write   | <ul><li>Set the Boot Order to the provided list of integers OR hex strings</li><li>Delete the UEFI BootOrder variable if set to `None`</li></ul> |
 | `hex_value`   | `string`                             | Read    | Return the current UEFI BootOrder as a comma separated list of hex boot entry values                                                             |
 | `__str__`     | &mdash;                              | &mdash; | Class can be converted to string representation in format "BootOrder: xxxx,yyyy,zzzz"                                                   |   
 

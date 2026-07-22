@@ -105,7 +105,7 @@ def set_boot_order(entries: list[int] | list[str]):
 
 def delete_boot_order():
     """
-    Delete the currently set BootNext entry
+    Delete the currently set BootOrder entry
     """
     __log.debug('Removing all entries in the BootOrder variable')
     __execute_efibootmgr(['--delete-bootorder'])
