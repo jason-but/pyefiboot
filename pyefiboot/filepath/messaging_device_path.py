@@ -4,6 +4,7 @@ This file implements the Messaging Device Path (File Path Node parsing) classes 
 Each class parses a single node, providing a string representation for display purposes
 """
 # Import System Libraries
+import uuid
 import ipaddress
 
 # Import BaseNodePathParser sub-module classes
@@ -85,19 +86,20 @@ class MessagingUSBDevice_3_5(BaseNodePathParser):
         return f'USB({self.__port:#04x},{self.__interface:#04x})'
 
 
-class MessagingI2ODevice_3_10(BaseNodePathParser):
-    """Messaging (I2O Random Block Storage) Device Path Parser"""
+class MessagingVendorDevice_3_10(BaseNodePathParser):
+    """Messaging (Vendor) Device Path Parser"""
     def __init__(self, node_data: bytes):
         """:param node_data: Python bytes object containing data to be parsed"""
-        super().__init__(node_data, '<L')
+        super().__init__(node_data, '<16s')
 
-        self._log.debug('Messaging (I2O Random Block Storage) Device Path')
+        self._log.debug('Messaging (Vendor) Device Path')
 
-        self.__tid, = self._fields
+        self.__vendor_guid = str(uuid.UUID(bytes_le=self._fields[0]))
+        self.__vendor_data = self._unpacked_data
 
     def __str__(self) -> str:
         """:return: String representation of the MAC Node"""
-        return f'I2O(ID:{self.__tid})'
+        return f'Vendor(uid={self.__vendor_guid},desc=0x{self.__vendor_data.hex()})'
 
 
 class MessagingMACDevice_3_11(BaseNodePathParser):
@@ -179,6 +181,21 @@ class MessagingNVMExpressDevice_3_23(BaseNodePathParser):
         return f'NVME({self.__namespace_id:#010x},{self.__extended_uid:#018x})'
 
 
+class MessagingURIDevice_3_24(BaseNodePathParser):
+    """Messaging (URI) Device Path Parser"""
+    def __init__(self, node_data: bytes):
+        """:param node_data: Python bytes object containing data to be parsed"""
+        super().__init__(node_data, '')
+
+        self._log.debug('Messaging (URI) Device Path')
+
+        self.__uri = self._unpacked_data.decode('utf-8').strip('\x00')
+
+    def __str__(self) -> str:
+        """:return: String representation of the USB Node"""
+        return f'URI({self.__uri})'
+
+
 # Class factory registration mapping Messaging Device node subtypes to the class for construction
 MESSAGING_DEVICE_REGISTRY = {
     1: MessagingATAPIDevice_3_1,
@@ -186,9 +203,10 @@ MESSAGING_DEVICE_REGISTRY = {
     3: MessagingFibreChannelDevice_3_3,
     4: MessagingI394Device_3_4,
     5: MessagingUSBDevice_3_5,
-    10: None,
+    10: MessagingVendorDevice_3_10,
     11: MessagingMACDevice_3_11,
     12: MessagingIPv4Device_3_12,
     13: MessagingIPv6Device_3_13,
     23: MessagingNVMExpressDevice_3_23,
+    24: MessagingURIDevice_3_24,
 }
