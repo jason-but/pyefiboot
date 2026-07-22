@@ -1,10 +1,11 @@
-# 0.0.2 (2026-xx-xx)
+# 0.0.2 (2026-07-22)
 
 ## New Features
 
  - Read/Write implementation of `BootTimeout`, `BootCurrent`, `BootNext` and `BootOrder`
  - Addition of new File Path Node types
  - Addition of internal `efibootmgr` wrapper to manage updating UEFI variables
+ - Documentation cleanup
 
 ## Bug Fixes
 
@@ -19,6 +20,11 @@
  - All File Path Nodes now decoded using `struct` in the Base class
  - Create `EFIVarBase`, `EFIVarInt` and `EFIVarIntList` as base classes for simple EFI Variable parsing
  
+## Known Issues
+
+ - `BootEntry` is still read-only and public interface not yet finalised
+ - `BootManager` is still read-only and public interface not yet finalised
+
 # 0.0.1 (2026-07-14)
 
 ## Original Release
