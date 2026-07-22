@@ -98,6 +98,59 @@ y: str | None = entry2.kernel_file
 
 Access to other variables within the `BootEntry` will be in future versions
 
+## Public Class Properties and APIs
+
+### `BootTimeout`
+
+Upon creation will read the current value of the UEFI Timeout variable. If the variable does not exist, it will be stored as `None`
+
+#### Properties
+
+| Property Name | Type            | Action  | Description                                                                                                       |
+|:--------------|:----------------|:--------|:------------------------------------------------------------------------------------------------------------------|
+| `value`       | `int` or `None` | Read    | <ul><li>Return timeout in seconds as an integer</li><li>Return `None` if variable does not exist</li></ul>        |
+| `value`       | `int` or `None` | Write   | <ul><li>Set the timeout to the provided value</li><li>Delete the UEFI Timeout variable if set to `None`</li></ul> |
+| `hex_value`   | `string`        | Read    | Return the current UEFI Timeout variable as a four-digit hex string                                               |
+| `__str__`     | &mdash;         | &mdash; | Class can be converted to string representation in format "BootTimeout: x seconds"                                |   
+
+### `BootCurrent`
+
+Upon creation will read the current value of the UEFI BootCurrent variable
+
+#### Properties
+
+| Property Name | Type            | Action    | Description                                                                   |
+|:--------------|:----------------|:----------|:------------------------------------------------------------------------------|
+| `value`       | `int`           | Read Only | Return the current UEFI BootCurrent variable as an integer                    |
+| `hex_value`   | `string`        | Read      | Return the current UEFI BootCurrent variable as a four-digit hex string       |
+| `__str__`     | &mdash;         | &mdash;   | Class can be converted to string representation in format "BootCurrent: xxxx" |   
+
+### `BootNext`
+
+Upon creation will read the current value of the UEFI BootNext variable. If the variable does not exist, it will be stored as `None`
+
+#### Properties
+
+| Property Name | Type            | Action  | Description                                                                                                                          |
+|:--------------|:----------------|:--------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `value`       | `int` or `None` | Read    | <ul><li>Return the Boot Entry index to be used on next boot as an integer</li><li>Return `None` if variable does not exist</li></ul> |
+| `value`       | `int` or `None` | Write   | <ul><li>Set the BootNext variable to the provided value</li><li>Delete the UEFI BootNext variable if set to `None`</li></ul>         |
+| `hex_value`   | `string`        | Read    | Return the current UEFI BootNext variable as a four-digit hex string                                                                 |
+| `__str__`     | &mdash;         | &mdash; | Class can be converted to string representation in format "BootNext: xxxx" or "BootNext <No Value>"                                  |   
+
+### `BootOrder`
+
+Upon creation will read the current value of the UEFI BootOrder variable. If the variable does not exist, it will be stored as `None`
+
+#### Properties
+
+| Property Name | Type                                 | Action  | Description                                                                                                                                      |
+|:--------------|:-------------------------------------|:--------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| `value`       | `list[int]` or `None`                | Read    | <ul><li>Return list of Boot Entry indexes as integers</li><li>Return `None` if variable does not exist</li></ul>                                 |
+| `value`       | `list[int]` or 'list[str]' or `None` | Write   | <ul><li>Set the Boot Order to the provided list of integers OR hex strings</li><li>Delete the UEFI BootOrder variable if set to `None`</li></ul> |
+| `hex_value`   | `string`                             | Read    | Return the current UEFI BootOrder as a comma separated list of hex boot entry values                                                             |
+| `__str__`     | &mdash;                              | &mdash; | Class can be converted to string representation in format "BootOrder: xxxx,yyyy,zzzz"                                                   |   
+
 ## Logging
 
 All modules within `pyefiboot` support Python `logging`, enabling logging and an appropriate log level in your 
