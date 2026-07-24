@@ -1,3 +1,11 @@
+# 0.0.3 (2026-xx-xx)
+
+## Roadmap
+
+ - Fix non updating of internal variables when setting `value` for `BootTimeout`, `BootNext` and `BootOrder` 
+ - Move `BootEntry` to submodule
+ - Freeze/fix API/interface to internal data for `BootEntry`
+
 # 0.0.2 (2026-07-22)
 
 ## New Features

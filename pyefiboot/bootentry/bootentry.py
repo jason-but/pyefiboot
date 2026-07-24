@@ -3,7 +3,8 @@ import struct
 import pathlib
 
 from pyefiboot.efivar import EFIVarBase
-from pyefiboot.filepath import FilePath
+from pyefiboot.bootentry.filepath import FilePath
+from pyefiboot.bootentry.optionaldata import OptionalData
 
 
 class BootEntry(EFIVarBase):
@@ -40,7 +41,6 @@ class BootEntry(EFIVarBase):
                     result = optional_data.decode('utf-16le', errors='ignore')
                     if all(c.isprintable() or c.isspace() for c in
                            result): return f'{result}raw<{optional_data}>u8<{optional_data.decode("utf-8", errors='ignore')}>'
-
 
                 # UTF-16 failed, try UTF-8
                 result = optional_data.decode('utf-8', errors='ignore').strip(' \x00')
@@ -82,8 +82,8 @@ class BootEntry(EFIVarBase):
         # Path list for Boot Entry starts 2 bytes after the null index and is of the precalculated length
         # Optional Data begins immediately after the path list
         path_list_data = data[null_index + 2:null_index + 2 + path_list_length]
-        self.optional_data = decode_optional_data(data[null_index + 2 + path_list_length:])
-        self._log.debug(f'Optional Data: {self.optional_data}')
+        self.__optional_data = OptionalData(data[null_index + 2 + path_list_length:])
+        self._log.debug(f'Optional Data: {self.__optional_data}')
 
         self.path_list: FilePath = FilePath(path_list_data)
 
@@ -97,7 +97,7 @@ class BootEntry(EFIVarBase):
         """
         :return: Verbose string representation of the Boot Entry
         """
-        return f'{self} - {self.path_list} - Extra({self.optional_data})'
+        return f'{self} - {self.path_list} - Extra({self.__optional_data})'
 
     @property
     def entry_num(self) -> str:
