@@ -1,11 +1,22 @@
 # 0.0.3 (2026-xx-xx)
 
-## Roadmap
+## Under construction
 
  - Fix non updating of internal variables when setting `value` for `BootTimeout`, `BootNext` and `BootOrder` 
- - Move `BootEntry` to submodule
  - Freeze/fix API/interface to internal data for `BootEntry`
 
+## New Features
+
+ - TBA
+
+## Bug Fixes
+
+ - Fix decoding of Optional Data within `BootEntry`
+
+## Code Changes
+
+ - `BootEntry` moved from top-level class to `pyefiboot.bootentry` sub-module. Sub-module `filepath` moved to sub-module of `pyefiboot.bootentry`
+ 
 # 0.0.2 (2026-07-22)
 
 ## New Features
