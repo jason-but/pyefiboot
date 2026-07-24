@@ -25,7 +25,7 @@ class OptionalData:
 
         try:
             self.__log.info('Attempting to decode using UTF-16')
-            self.__data = raw_data.decode('utf-16le').strip('\x00')
+            self.__data = raw_data.decode('utf-16le')
             if self.__data.isprintable():
                 self.__log.debug(f'Decoding string: {self.__data}')
                 return
@@ -34,14 +34,16 @@ class OptionalData:
 
         try:
             self.__log.info('Attempting to decode using UTF-8')
-            self.__data = raw_data.decode('utf-8').strip('\x00')
+            self.__data = raw_data.decode('utf-8')
             if self.__data.isprintable():
                 self.__log.debug(f'Decoding string: {self.__data}')
                 return
         except UnicodeDecodeError:
             pass
 
-        self.__data = ':'.join(f'{b:02x}' for b in raw_data) + ' - ' + ''.join(chr(b) if 32 <= b <= 126 else '.' for b in raw_data)
+        hex_rep = ':'.join(f'{b:02x}' for b in raw_data)
+        ascii_rep = ''.join(chr(b) if 32 <= b <= 126 else '.' for b in raw_data)
+        self.__data = f'Hex({hex_rep}) ASCII({ascii_rep})'
         self.__log.info(f'Not decodable - binary byte sequence ({self.__data})')
 
     def __str__(self):
