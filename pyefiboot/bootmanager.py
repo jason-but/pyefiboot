@@ -40,4 +40,9 @@ class BootManager:
         if self.boot_order: print(self.boot_order)
 
         for num, boot_entry in self.boot_entries.items():
-            print(boot_entry.verbose_str() if verbose else boot_entry)
+            print(boot_entry)
+            if verbose:
+                print(' - File Path:')
+                for path in boot_entry.file_paths:
+                    print(f'    - {path}')
+                print(f' - Optional Data: {boot_entry.optional_data}')
