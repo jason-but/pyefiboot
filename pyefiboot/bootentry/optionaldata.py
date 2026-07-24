@@ -47,8 +47,10 @@ class OptionalData:
         self.__log.info(f'Not decodable - binary byte sequence ({self.__data})')
 
     def __str__(self):
+        """:return: Return string representation of optional data for display"""
         return self.__data
 
     @property
     def raw_data(self) -> bytes:
+        """:return: Return original bytes data containing optional data"""
         return self.__raw_data
