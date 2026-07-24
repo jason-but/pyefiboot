@@ -98,14 +98,20 @@ class FilePath:
 
     @property
     def kernel_file(self) -> str | None:
-        """
-        :return: Internal (read-only) property stored in __kernel_file
-        """
+        """:return: Internal (read-only) property stored in __kernel_file"""
         return self.__kernel_file
 
+    @property
+    def path_lists(self) -> list[list]:
+        """:return: Copy of file paths stored in __path_lists"""
+        return self.__path_lists[:]
+
+    @property
+    def str_path_lists(self) -> list[str]:
+        """:return: List of strings representing the parsed File Paths"""
+        return ['/'.join(map(str, path_list)) for path_list in self.__path_lists]
+
     def __str__(self):
-        """
-        :return: String representation of File Paths stored in __path_lists
-        """
-        return '\n'.join('/'.join(map(str, path_list)) for path_list in self.__path_lists)
+        """:return: Simple string representation of one or more parsed File Paths"""
+        return '\n'.join(self.str_path_lists)
 
