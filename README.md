@@ -100,9 +100,7 @@ if __name__ == '__main__':
     main()
 ```
 
-Access to other variables within the `BootEntry` will be in future versions
-
-## Public Class Properties and APIs
+## Public Class APIs and Properties
 
 The API documentation for each of the publicly exposed classes can be found on the project Wiki
 
@@ -111,7 +109,7 @@ The API documentation for each of the publicly exposed classes can be found on t
  - `BootCurrent`: https://github.com/jason-but/pyefiboot/wiki/API:-BootCurrent-Class
  - `BootNext`: https://github.com/jason-but/pyefiboot/wiki/API:-BootNext-Class
  - `BootOrder`: https://github.com/jason-but/pyefiboot/wiki/API:-BootOrder-Class
- - `BootEntry`: TBD
+ - `BootEntry`: [API: BootEntry Class](https://github.com/jason-but/pyefiboot/wiki/API:-BootEntry-Class)
 
 ## Logging
 
