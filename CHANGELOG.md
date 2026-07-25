@@ -7,7 +7,7 @@
 
 ## New Features
 
- - TBA
+ - API Documentation on GitHub Wiki for all publicly facing Classes **EXCEPT** `BootEntry` and `BootManager`
 
 ## Bug Fixes
 
