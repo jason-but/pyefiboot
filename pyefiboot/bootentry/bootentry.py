@@ -63,10 +63,12 @@ class BootEntry(EFIVarBase):
         self._log.debug(f'Optional Data: {self.__optional_data}')
 
     def __str__(self) -> str:
-        """
-        :return: Default string representation of the Boot Entry
-        """
+        """:return: Default string representation of the Boot Entry"""
         return f'Boot{self.__index}{'*' if self.__is_active else ''} {self.__label}'
+
+    def __repr__(self) -> str:
+        """:return: Verbose string representation of the Boot Entry"""
+        return f'{self} - {self.__path_list} - Extra({self.__optional_data})'
 
     def delete(self) -> None:
         """
@@ -78,13 +80,9 @@ class BootEntry(EFIVarBase):
         self._log.info('Functionality not implemented yet')
         pass
 
-    def verbose_str(self) -> str:
-        """:return: Verbose string representation of the Boot Entry"""
-        return f'{self} - {self.__path_list} - Extra({self.__optional_data})'
-
     # ---------- PROPERTIES ----------
     @property
-    def entry_num(self) -> str:
+    def index(self) -> str:
         """:return: Boot Entry index number as a four character hexadecimal string"""
         return self.__index
 
@@ -104,14 +102,14 @@ class BootEntry(EFIVarBase):
         return self.__is_hidden
 
     @property
-    def kernel_file(self) -> str | None:
-        """:return: Boot Entry kernel file to load if it exists, otherwise None"""
-        return self.__path_list.kernel_file
-
-    @property
     def label(self) -> str:
         """:return: Boot Entry label"""
         return self.__label
+
+    @property
+    def kernel_file(self) -> str | None:
+        """:return: Boot Entry kernel file to load if it exists, otherwise None"""
+        return self.__path_list.kernel_file
 
     @property
     def file_paths(self) -> list[str]:
