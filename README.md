@@ -49,50 +49,55 @@ To get output similar to `efibootmgr -v`:
 bootmgr.display(verbose=True)
 ```
 
-### Reading the `BootCurrent`, `BootNext`, `BootTimeout` and `BootOrder` EFI Variables
+### Simple Program to Replicate `efibootmgr` and `efibootmgr -v`
 
 ```python
-import pyefiboot
-
-cur = pyefiboot.BootCurrent()
-
-# Integer value of the current EFI Boot Entry
-x: int = cur.value
-
-# String representation of the current EFI Boot Entry, four character hex number
-y: str = cur.hex_value
-
-# BootNext and BootTimeout have similar functionality to BootCurrent
-
-ord = pyefiboot.BootOrder()
-
-# List of integers mapping the current programmed order of EFI Boot Entries
-x: list[int] = ord.value
-
-# String representation of the current EFI Boot Entry order, displayed as comma separated string of four character hex numbers
-y: str = ord.hex_value
-```
-
-### Reading an EFI Boot Entry variable
-
-```python
+import argparse
 import pathlib
-import pyefiboot
+import logging
 
-entry1 = pyefiboot.BootEntry(efivar_name='Boot0001')
-entry2 = pyefiboot.BootEntry(efivar_fullpath=pathlib.Path('/sys/firmware/efi/efivars/Boot0002-8be4df61-93ca-11d2-aa0d-00e098032b8c'))
+from pyefiboot import Configuration, BootTimeout, BootCurrent, BootNext, BootOrder, BootEntry
 
-# Print string representation of boot entry to screen
-print(entry1)
+def main() -> None:
+    # Create argument parser and add -v parameter
+    parser = argparse.ArgumentParser(description='pfEFIBoot', formatter_class=argparse.RawTextHelpFormatter, allow_abbrev=False)
 
-# Print verbose string representation of boot entry to screen
-print(entry1.verbose_str())
+    parser.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
 
-# String representation of Boot Entry Index, four character hex number
-x: str = entry2.entry_num
+    # Get user options
+    arguments = parser.parse_args()
 
-# If the Boot Entry refers to an actual local kernel to boot, returns the string representing the kernel file name, otherwise None
-y: str | None = entry2.kernel_file
+    # Load Simple EFI variables
+    boot_timeout: BootTimeout = BootTimeout()
+    boot_current: BootCurrent = BootCurrent()
+    boot_next: BootNext  = BootNext()
+    boot_order: BootOrder  = BootOrder()
+    
+    # Create dictionary mapping Boot Entry index to BootEntry instance
+    boot_entries: dict[str, BootEntry] = {}
+    for boot_entry_file in sorted(Configuration().efivarfs_path.glob('Boot[!N]???-*')):
+        # For each filename that starts with Boot, followed by a character that is NOT 'N', then three more characters, followed by a '-'
+        entry = BootEntry(efivar_fullpath=boot_entry_file)
+        boot_entries[entry.entry_num] = entry
+
+    # Display contents of EFI Boot variables to screen
+    print(boot_current)
+    print(boot_next)
+    print(boot_timeout)
+    print(boot_order)
+
+    # Display each Boot Entry in turn, with more detail if run in verbose mode
+    for num, boot_entry in boot_entries.items():
+        print(boot_entry)
+        if arguments.verbose:
+            print(' - File Path:')
+            for path in boot_entry.file_paths:
+                print(f'    - {path}')
+            print(f' - Optional Data: {boot_entry.optional_data}')
+
+
+if __name__ == '__main__':
+    main()
 ```
 
 Access to other variables within the `BootEntry` will be in future versions
