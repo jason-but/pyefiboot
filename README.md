@@ -104,12 +104,12 @@ if __name__ == '__main__':
 
 The API documentation for each of the publicly exposed classes can be found on the project Wiki
 
- - `Configuration`: https://github.com/jason-but/pyefiboot/wiki/API:-Configuration-Class 
- - `BootTimeout`: https://github.com/jason-but/pyefiboot/wiki/API:-BootTimeout-Class
- - `BootCurrent`: https://github.com/jason-but/pyefiboot/wiki/API:-BootCurrent-Class
- - `BootNext`: https://github.com/jason-but/pyefiboot/wiki/API:-BootNext-Class
- - `BootOrder`: https://github.com/jason-but/pyefiboot/wiki/API:-BootOrder-Class
- - `BootEntry`: [API: BootEntry Class](https://github.com/jason-but/pyefiboot/wiki/API:-BootEntry-Class)
+ - [API: Configuration Class](https://github.com/jason-but/pyefiboot/wiki/API:-Configuration-Class) 
+ - [API: BootTimeout Class](https://github.com/jason-but/pyefiboot/wiki/API:-BootTimeout-Class)
+ - [API: BootCurrent Class](https://github.com/jason-but/pyefiboot/wiki/API:-BootCurrent-Class)
+ - [API: BootNext Class](https://github.com/jason-but/pyefiboot/wiki/API:-BootNext-Class)
+ - [API: BootOrder Class](https://github.com/jason-but/pyefiboot/wiki/API:-BootOrder-Class)
+ - [API: BootEntry Class](https://github.com/jason-but/pyefiboot/wiki/API:-BootEntry-Class)
 
 ## Logging
 
