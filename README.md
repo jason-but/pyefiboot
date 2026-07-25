@@ -78,7 +78,7 @@ def main() -> None:
     for boot_entry_file in sorted(Configuration().efivarfs_path.glob('Boot[!N]???-*')):
         # For each filename that starts with Boot, followed by a character that is NOT 'N', then three more characters, followed by a '-'
         entry = BootEntry(efivar_fullpath=boot_entry_file)
-        boot_entries[entry.entry_num] = entry
+        boot_entries[entry.index] = entry
 
     # Display contents of EFI Boot variables to screen
     print(boot_current)
