@@ -2,25 +2,38 @@
 import struct
 import pathlib
 
-from pyefiboot.efivar import EFIVarBase
+from pyefiboot.efivar import EFIVarBaseOld
 from pyefiboot.bootentry.filepath import FilePath
 from pyefiboot.bootentry.optionaldata import OptionalData
 
 
-class BootEntry(EFIVarBase):
+class BootEntry(EFIVarBaseOld):
+    """
+    BootEntry class - Stores the EFI Boot Order Variable
+
+    Can be created via directly loading an existing EFI Boot Entry variable, or via calling the static create_new() method which will create a new variable
+    using efibootmgr and then create an instance of BootEntry mapped to the newly created variable
+
+    This class allows extraction of current BootEntry data for display to screen or processing
+    """
     def __init__(self, efivar_name: str | None = None, efivar_fullpath: pathlib.Path | None = None) -> None:
         """
-        Read an EFI Variable represented as a single integer from the EFI file and store in __value
+        Inherit from the base class to read the BootEntry variable
 
-        **WARNING**: ONLY one of global_namespace or efivar_fullpath must be provided
+        The base class will load the variable raw data into self._raw_data and the actual variable name in self.efivar_name
+
+        The contents of the bytes array self._raw_data are decoded into internal variables
+
+        **WARNING: ONLY one of global_namespace or efivar_fullpath must be provided**
 
         :param efivar_name: EFI variable name to read
         :param efivar_fullpath: Fully qualified path of the EFI Variable file
         """
         super().__init__(efivar_name, efivar_fullpath)
 
-        self.__index: str = self.efivar_name[4:]
-        self._log.debug(f'Boot Entry Index: {self.__index}')
+        self.__hex_index: str = self.efivar_name[4:]
+        self.__index: int = int(self.__hex_index, base=16)
+        self._log.debug(f'Boot Entry Index: {self.__hex_index} ({self.__index})')
 
         # Layout of data within BootEntry
         # +------------+---------------+------------------------------------+---------------------+---------------+
@@ -50,7 +63,7 @@ class BootEntry(EFIVarBase):
         # Optional Data for Boot Entry is immediately after the path list
         optional_data_index = path_list_index + path_list_length
 
-        # Extract Boot Entry Labelself._raw_data[label_index:null_index] maps to UTF-16 string excluding NULL terminator
+        # Extract Boot Entry Label - self._raw_data[label_index:null_index] maps to UTF-16 string excluding NULL terminator
         self.__label = self._raw_data[label_index:null_index].decode('utf-16le', errors='ignore')
         self._log.debug(f'Boot Entry Label: {self.__label}')
 
@@ -82,8 +95,13 @@ class BootEntry(EFIVarBase):
 
     # ---------- PROPERTIES ----------
     @property
-    def index(self) -> str:
+    def hex_index(self) -> str:
         """:return: Boot Entry index number as a four character hexadecimal string"""
+        return self.__hex_index
+
+    @property
+    def index(self) -> int:
+        """:return: Boot Entry index number as an integer"""
         return self.__index
 
     @property

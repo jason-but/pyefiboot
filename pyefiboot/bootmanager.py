@@ -22,14 +22,14 @@ class BootManager:
 
     def update_from_efi(self):
         # Read basic EFI Boot variables
-        self.boot_current = self._create_class_or_none(BootCurrent)
-        self.boot_next = self._create_class_or_none(BootNext, log_warning=False)
-        self.boot_timeout = self._create_class_or_none(BootTimeout)
-        self.boot_order = self._create_class_or_none(BootOrder)
+        self.boot_current = BootCurrent()
+        self.boot_next = BootNext()
+        self.boot_timeout = BootTimeout()
+        self.boot_order = BootOrder()
 
         for boot_entry_file in sorted(Configuration().efivarfs_path.glob('Boot[!N]???-*')):
             entry = BootEntry(efivar_fullpath=boot_entry_file)
-            self.boot_entries[entry.entry_num] = entry
+            self.boot_entries[entry.hex_index] = entry
             if entry.kernel_file:
                 self.kernel_entries[entry.kernel_file] = entry
 

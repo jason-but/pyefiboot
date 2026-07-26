@@ -8,10 +8,10 @@ import array
 import pathlib
 
 # Import efivar sub-module classes
-from . import EFIVarBase
+from . import EFIVarBaseOld
 
 
-class EFIVarIntList(EFIVarBase):
+class EFIVarIntListOld(EFIVarBaseOld):
     """
     EFIVarInt class
 
@@ -23,8 +23,7 @@ class EFIVarIntList(EFIVarBase):
         """
         Read an EFI Variable represented as a list of 16-bit integers from the EFI file and store in __value
 
-        .. warning::
-           ONLY one of efivar_name or efivar_fullpath must be provided
+        **WARNING: ONLY one of efivar_name or efivar_fullpath must be provided**
 
         :param efivar_name: EFI variable name to read
         :param efivar_fullpath: Fully qualified path of the EFI Variable file
@@ -46,3 +45,6 @@ class EFIVarIntList(EFIVarBase):
             return '<No Value>'
 
         return ','.join(f'{value:04x}' for value in self.__value)
+
+
+EFIVarIntListOld(efivar_name='Boot0001')

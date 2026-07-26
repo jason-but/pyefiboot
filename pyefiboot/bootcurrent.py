@@ -4,13 +4,14 @@ This file implements the BootCurrent class within the pyefiboot library
 BootCurrent provides access to the current value of the BootCurrent EFI Variable
 """
 # Import efivar modules and classes
-import pyefiboot.efibootmgr as efibootmgr
-from pyefiboot.efivar import EFIVarInt
+from pyefiboot.efivar import EFIVarIntRO
 
 
-class BootCurrent(EFIVarInt):
+class BootCurrent(EFIVarIntRO):
     """
     BootCurrent class - Stores the EFI Timeout Variable
+
+    Timeout is a Read-Only Integer EFI Variable
     """
     def __init__(self) -> None:
         """

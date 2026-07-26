@@ -5,16 +5,16 @@ BootOrder provides access to the current value of the BootOrder EFI Variable
 """
 # Import efivar modules and classes
 import pyefiboot.efibootmgr as efibootmgr
-from pyefiboot.efivar import EFIVarIntList
+from pyefiboot.efivar import EFIVarIntListOld
 
 
-class BootOrder(EFIVarIntList):
+class BootOrder(EFIVarIntListOld):
     """
     BootOrder class - Stores the EFI Boot Order Variable
     """
     def __init__(self) -> None:
         """
-        Inherit from the base class to read the Next variable
+        Inherit from the base class to read the BootOrder variable
         """
         super().__init__(efivar_name='BootOrder')
 
@@ -22,7 +22,7 @@ class BootOrder(EFIVarIntList):
         """:return: Default string representation of the Boot Order"""
         return f'BootOrder: {self.hex_value}'
 
-    @EFIVarIntList.value.setter
+    @EFIVarIntListOld.value.setter
     def value(self, new_value: list[int] | list[str] | None) -> None:
         """
         Update the EFI BootOrder variable to the provided value (None will delete the BootOrder variable)
