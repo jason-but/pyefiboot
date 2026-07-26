@@ -12,14 +12,29 @@ from pyefiboot import Configuration
 
 
 class EFIVarBase:
+    """
+    EFIVarBase class
+
+    Base class to process an EFI Variable and provide possible read/write/delete support
+
+    Should be inherited for individual variable names, not meant to be instatiated on its own
+    """
     EFI_VARIABLE_NON_VOLATILE = 0x00000001
+    """int: Static variable indicating flag for a non-volatile EFI variable (should be written firmware/NV-RAM)"""
     EFI_VARIABLE_BOOTSERVICE_ACCESS = 0x00000002
+    """int: Static variable indicating flag for a boot service editable EFI variable (variable can be updated by the UEFI boot loader)"""
     EFI_VARIABLE_RUNTIME_ACCESS = 0x00000004
-    STANDARD_ATTR = struct.pack('<I', EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS)
+    """int: Static variable indicating flag for a runtime editable EFI variable (variable can be updated by the running OS)"""
+
+    READONLY_ATTR = struct.pack('<I', EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS)
+    """int: Integer value representing EFI Variable Attribute for a Read-Only Variable"""
+
+    READWRITE_ATTR = struct.pack('<I', EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS)
+    """int: Integer value representing EFI Variable Attribute for a Read/Write Variable"""
 
     def __init__(self, efivar_name: str | None = None, efivar_fullpath: pathlib.Path | None = None) -> None:
         """
-        Read an EFI Variable:
+        Initialise the EFI Variable based on either the variable name OR the full path to the file containing the variable:
          - Store variable data in self._raw_data as a bytes sequence
          - Store EFI Variable name in self.__efi_var_name as a string
          - Store fully qualified path to EFI Variable in self.__efi_var_fullpath as a pathlib.Path
@@ -84,7 +99,7 @@ class EFIVarBase:
 
         try:
             self._log.debug(f'{self.__efivar_name}: Writing raw data sequence - {raw_data}')
-            self.__efivar_fullpath.write_bytes(self.STANDARD_ATTR + raw_data)
+            self.__efivar_fullpath.write_bytes(self.READWRITE_ATTR + raw_data)
             self._raw_data = raw_data
         except FileNotFoundError as e:
             print(f'ERROR: File not found: {e}')

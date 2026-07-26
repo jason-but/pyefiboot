@@ -8,65 +8,68 @@ import pathlib
 import struct
 
 # Import efivar sub-module classes
-from . import EFIVarBaseOld, EFIVarBase
+from . import EFIVarBase
 
 
 class EFIVarIntRO(EFIVarBase):
     def __init__(self, efivar_name: str | None = None, efivar_fullpath: pathlib.Path | None = None) -> None:
+        """
+        Initialise a read-only integer EFI Variable based on either the variable name OR the full path to the file containing the variable:
+         - Call the base class constructor to load the variable data in self._raw_data as a bytes sequence
+         - Convert self._raw_data to an integer to store in _value
+
+        **WARNING: ONLY one of efivar_name or efivar_fullpath must be provided**
+
+        :param efivar_name: EFI variable name to read
+        :param efivar_fullpath: Fully qualified path of the EFI Variable file
+        """
         super().__init__(efivar_name, efivar_fullpath)
-        self.__value: bytes | None = int.from_bytes(self._raw_data, byteorder="little") if self._raw_data else None
-        self._log.info(f"EFI Variable {self.efivar_name} Int Initialized to {self.__value}")
+        self._value: int | None = int.from_bytes(self._raw_data, byteorder="little") if self._raw_data else None
+        self._log.info(f'Integer variable initialised to {self._value}')
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self.__value}({self.hex_value}))'
+        """:return: Verbose string representation of class for debugging purposes"""
+        return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self._value}({self.hex_value}))'
 
     @property
     def value(self) -> int | None:
         """:return: Return integer value of the read EFI Variable"""
-        return self.__value
+        return self._value
 
     @property
     def hex_value(self) -> str:
         """:return: Hexadecimal representation of the read EFI Variable"""
-        if self.__value is None:
+        if self._value is None:
             return '<No Value>'
-        return f'{self.__value:04x}'
+        return f'{self._value:04x}'
 
 
-class EFIVarIntRW(EFIVarBase):
+class EFIVarIntRW(EFIVarIntRO):
     def __init__(self, efivar_name: str | None = None, efivar_fullpath: pathlib.Path | None = None) -> None:
+        """
+        Initialise a read/write integer EFI Variable based on either the variable name OR the full path to the file containing the variable:
+         - Call the base class constructor to load the variable data in self._raw_data as a bytes sequence and self._value as an integer value
+
+        **WARNING: ONLY one of efivar_name or efivar_fullpath must be provided**
+
+        :param efivar_name: EFI variable name to read
+        :param efivar_fullpath: Fully qualified path of the EFI Variable file
+        """
         super().__init__(efivar_name, efivar_fullpath)
-        self.__value: bytes | None = int.from_bytes(self._raw_data, byteorder="little") if self._raw_data else None
-        self._log.info(f"EFI Variable {self.efivar_name} Int Initialized to {self.__value}")
 
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self.__value}({self.hex_value}))'
-
-    @property
-    def value(self) -> int | None:
-        """:return: Return integer value of the read EFI Variable"""
-        return self.__value
-
-    @property
-    def hex_value(self) -> str:
-        """:return: Hexadecimal representation of the read EFI Variable"""
-        if self.__value is None:
-            return '<No Value>'
-        return f'{self.__value:04x}'
-
-    @value.setter
+    @EFIVarIntRO.value.setter
     def value(self, new_value: int | str | None) -> None:
         """
-        Update the EFI BootNext variable to the provided value (None will delete the BootNext variable)
+        Update the EFI variable to the provided value (None will delete the EFI variable)
 
-        :param new_value: Boot entry in range 0x0000-0xffff OR None. If a valid value is provided, BootNext is updated. If None is provided, BootNext is cleared
+        :param new_value: Boot entry in range 0x0000-0xffff (as string or integer) OR None. If a valid value is provided, EFI variable is updated. If None is provided, EFI variable is deleted
         """
         match new_value:
             case None:
                 # Provided new value is none. Delete EFI variable
                 self._log.debug(f'Deleting the {self.efivar_name} variable')
                 self._delete()
-                self.__value = None
+                self._value = None
                 return
             case int():
                 # Provided new value is an integer. Check range and raise exception if out of range
@@ -86,41 +89,5 @@ class EFIVarIntRW(EFIVarBase):
         self._write(struct.pack(f'<H', new_value))
 
         # EFI Update successful, update internal variable
-        self.__value = new_value
-        self._log.debug(f'{self.efivar_name}: Updated value to {self.__value} ({self.hex_value})')
-
-
-class EFIVarIntOld(EFIVarBaseOld):
-    """
-    EFIVarInt class
-
-    Base class to process an EFI Variable that contains a single integer
-
-    Should be inherited for individual variable names
-    """
-    def __init__(self, efivar_name: str | None = None, efivar_fullpath: pathlib.Path | None = None) -> None:
-        """
-        Read an EFI Variable represented as a single integer from the EFI file and store in __value
-
-        .. warning::
-           ONLY one of global_namespace or efivar_fullpath must be provided
-
-        :param efivar_name: EFI variable name to read
-        :param efivar_fullpath: Fully qualified path of the EFI Variable file
-        """
-        super().__init__(efivar_name, efivar_fullpath)
-
-        self.__value = int.from_bytes(self._raw_data, 'little') if self._raw_data else None
-        self._log.info(f'Read integer value: {self.__value}')
-
-    @property
-    def value(self) -> int | None:
-        """:return: Return integer value of the read EFI Variable"""
-        return self.__value
-
-    @property
-    def hex_value(self) -> str:
-        """:return: Hexadecimal representation of the read EFI Variable"""
-        if self.__value is None:
-            return '<No Value>'
-        return f'{self.__value:04x}'
+        self._value = new_value
+        self._log.debug(f'{self.efivar_name}: Updated value to {self._value} ({self.hex_value})')
