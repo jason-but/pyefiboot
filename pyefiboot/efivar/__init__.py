@@ -2,7 +2,7 @@ from .efivarbase import EFIVarBaseOld, EFIVarBase
 
 from .efivarint import EFIVarIntRO, EFIVarIntRW
 
-from .efivarintlist import EFIVarIntListOld, EFIVarIntListRO
+from .efivarintlist import EFIVarIntListRO, EFIVarIntListRW
 
 __all__ = [
     "EFIVarBaseOld",
@@ -10,5 +10,5 @@ __all__ = [
     "EFIVarIntRO",
     "EFIVarIntRW",
     "EFIVarIntListRO",
-    "EFIVarIntListOld",
+    "EFIVarIntListRW",
 ]

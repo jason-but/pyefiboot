@@ -8,7 +8,7 @@ import array
 import pathlib
 
 # Import efivar sub-module classes
-from . import EFIVarBaseOld, EFIVarBase
+from . import EFIVarBase
 
 
 class EFIVarIntListRO(EFIVarBase):
@@ -44,17 +44,11 @@ class EFIVarIntListRO(EFIVarBase):
         return '<No Value>' if self._value is None else ','.join(f'{value:04x}' for value in self._value)
 
 
-class EFIVarIntListOld(EFIVarBaseOld):
-    """
-    EFIVarInt class
-
-    Base class to process an EFI Variable that contains an array of integers
-
-    Should be inherited for individual variable names
-    """
+class EFIVarIntListRW(EFIVarIntListRO):
     def __init__(self, efivar_name: str | None = None, efivar_fullpath: pathlib.Path | None = None) -> None:
         """
-        Read an EFI Variable represented as a list of 16-bit integers from the EFI file and store in __value
+        Initialise a read/write integer list EFI Variable based on either the variable name OR the full path to the file containing the variable:
+         - Call the base class constructor to load the variable data in self._raw_data as a bytes sequence and self._value as a list[int] value (or None)
 
         **WARNING: ONLY one of efivar_name or efivar_fullpath must be provided**
 
@@ -63,18 +57,73 @@ class EFIVarIntListOld(EFIVarBaseOld):
         """
         super().__init__(efivar_name, efivar_fullpath)
 
-        self.__value: list[int] = array.array('H', self._raw_data).tolist()
-        self._log.info(f'Read integer list: {self.__value}')
+    def _validate_new_value(self, new_value: list[int | str] | None) -> list[int] | None:
+        """
+        Private method called to validate the parameter provided to the value setter.
 
-    @property
-    def value(self) -> list[int] | None:
-        """:return: Return list of integer values of the read EFI Variable"""
-        return self.__value
+        This is intended to be overloaded when subclassed to provide a higher level of value validation specific to the individual EFI Variable
 
-    @property
-    def hex_value(self) -> str:
-        """:return: Hexadecimal list representation of the read EFI Variable"""
-        if self.__value is None:
-            return '<No Value>'
+        Method will validate all allowed types provided to the getter, and return a clean version of new_value of either list[int] or None type (list[str] will
+        be converted to list[int])
 
-        return ','.join(f'{value:04x}' for value in self.__value)
+        Base class method will:
+         - Validate provided None value, returning None
+         - Validate provided list[int] value is a list of all integers, with all integers in range 0x0000-0xffff, returning provided list[int]
+         - Validate provided list[str] value is a list of all strings, all strings are valid hexadecimal numbers that can be converted to an integer in the range
+           0x0000-0xffff, returning list[int] where all hexadecimal strings having been converted
+         - Other values will raise an exception
+
+        :param new_value: List of 16-bit Integer value in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
+        :return: list[int] value of provided list[int | str] parameter, or None
+        :raise: ValueError if provided int or string value is not in range 0x0000-0xffff
+        :raise: TypeError if provided value is not None, int, or string
+        """
+        match new_value:
+            case None:
+                # None is valid, return None
+                return None
+            case list() if all(isinstance(x, int) and not isinstance(x, bool) and (0x0000 <= x <= 0xffff) for x in new_value):
+                # new_value is a list of 16-bit integers, OK
+                return new_value
+            case list() if all(isinstance(x, int) and not isinstance(x, bool) for x in new_value):
+                # new_value is a list of integers, but at least one is outside the valid range
+                raise ValueError(f'Setting {self.efivar_name} EFI Variable to {new_value}. Must be list of integers in range [0000-0xffff]')
+            case list() if all(isinstance(x, str) for x in new_value):
+                try:
+                    # Try to convert the string to an integer using base 16, then validate it is a 16-bit integer and return
+                    result = [int(x, base=16) for x in new_value]
+                    if all(0x0000 <= x <= 0xffff for x in result): return result
+                    # String can be converted to an integer, but is outside the range. Raise ValueError, it will be caught by the except below and re-raise with a nice error message
+                    raise ValueError()
+                except ValueError:
+                    # String unable to be converted to an integer OR can be converted but is not a valid 16-bit integer
+                    raise ValueError(f'Setting {self.efivar_name} to "{new_value}". Must be list of strings where each string is a hex-number in range [0000-ffff]')
+            case _:
+                # Any other parameter type is a Type Error
+                raise TypeError(f'Setting {self.efivar_name} - new value must be list of integer or strings containing hexadecimal value in range 0x0000-0xffff')
+
+    @EFIVarIntListRO.value.setter
+    def value(self, new_value: int | str | None) -> None:
+        """
+        Update the EFI variable to the provided value (None will delete the EFI variable)
+
+        :param new_value: Boot entry in range 0x0000-0xffff (as string or integer) OR None. If a valid value is provided, EFI variable is updated. If None is provided, EFI variable is deleted
+        """
+        # Validate provided parameter
+        new_value = self._validate_new_value(new_value)
+
+        # new_value is valid and EFI variable can be updated
+        match new_value:
+            case None:
+                # Provided new value is None. Delete EFI variable (may throw an exception)
+                self._log.debug(f'Deleting the {self.efivar_name} variable')
+                # self._delete()
+
+            case int():
+                # Provided new value is an integer, try to update EFI variable (may throw an exception)
+                self._log.debug(f'Creating/updating {self.efivar_name} variable to {new_value}')
+                # self._write(struct.pack(f'<H', new_value))
+
+        # EFI Update successful, update internal variable
+        self._value = new_value
+        self._log.debug(f'{self.efivar_name}: Updated value to {self._value} ({self.hex_value})')

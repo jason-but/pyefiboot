@@ -5,11 +5,10 @@ BootOrder provides access to the current value of the BootOrder EFI Variable
 """
 # Import efivar modules and classes
 import pyefiboot.efibootmgr as efibootmgr
-from pyefiboot.efivar import EFIVarIntListOld, EFIVarIntListRO
+from pyefiboot.efivar import EFIVarIntListRW
 
-# class BootOrder(EFIVarIntListOld):
 
-class BootOrder(EFIVarIntListRO):
+class BootOrder(EFIVarIntListRW):
     """
     BootOrder class - Stores the EFI Boot Order Variable
     """
@@ -23,18 +22,18 @@ class BootOrder(EFIVarIntListRO):
         """:return: Default string representation of the Boot Order"""
         return f'BootOrder: {self.hex_value}'
 
-    @EFIVarIntListRO.value.setter
-    def value(self, new_value: list[int] | list[str] | None) -> None:
-        """
-        Update the EFI BootOrder variable to the provided value (None will delete the BootOrder variable)
-
-        :param new_value: Boot entry in range 0x0000-0xffff OR None. If a valid value is provided, BootOrder is updated. If None is provided, BootOrder is cleared
-        """
-        if new_value is None:
-            self._log.debug(f'Deleting the BootOrder variable')
-            # efibootmgr.delete_boot_order()
-        else:
-            self._log.debug(f'Set BootOrder variable to {new_value}')
-            # efibootmgr.set_boot_order(new_value)
-
-        self._value = [int(value, base=16) for value in new_value] if isinstance(new_value[0], str) else new_value
+    # @EFIVarIntListRO.value.setter
+    # def value(self, new_value: list[int] | list[str] | None) -> None:
+    #     """
+    #     Update the EFI BootOrder variable to the provided value (None will delete the BootOrder variable)
+    #
+    #     :param new_value: Boot entry in range 0x0000-0xffff OR None. If a valid value is provided, BootOrder is updated. If None is provided, BootOrder is cleared
+    #     """
+    #     if new_value is None:
+    #         self._log.debug(f'Deleting the BootOrder variable')
+    #         # efibootmgr.delete_boot_order()
+    #     else:
+    #         self._log.debug(f'Set BootOrder variable to {new_value}')
+    #         # efibootmgr.set_boot_order(new_value)
+    #
+    #     self._value = [int(value, base=16) for value in new_value] if isinstance(new_value[0], str) else new_value
