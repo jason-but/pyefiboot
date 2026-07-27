@@ -5,10 +5,11 @@ BootOrder provides access to the current value of the BootOrder EFI Variable
 """
 # Import efivar modules and classes
 import pyefiboot.efibootmgr as efibootmgr
-from pyefiboot.efivar import EFIVarIntListOld
+from pyefiboot.efivar import EFIVarIntListOld, EFIVarIntListRO
 
+# class BootOrder(EFIVarIntListOld):
 
-class BootOrder(EFIVarIntListOld):
+class BootOrder(EFIVarIntListRO):
     """
     BootOrder class - Stores the EFI Boot Order Variable
     """
@@ -22,7 +23,7 @@ class BootOrder(EFIVarIntListOld):
         """:return: Default string representation of the Boot Order"""
         return f'BootOrder: {self.hex_value}'
 
-    @EFIVarIntListOld.value.setter
+    @EFIVarIntListRO.value.setter
     def value(self, new_value: list[int] | list[str] | None) -> None:
         """
         Update the EFI BootOrder variable to the provided value (None will delete the BootOrder variable)
@@ -31,9 +32,9 @@ class BootOrder(EFIVarIntListOld):
         """
         if new_value is None:
             self._log.debug(f'Deleting the BootOrder variable')
-            efibootmgr.delete_boot_order()
+            # efibootmgr.delete_boot_order()
         else:
             self._log.debug(f'Set BootOrder variable to {new_value}')
-            efibootmgr.set_boot_order(new_value)
+            # efibootmgr.set_boot_order(new_value)
 
-        self.__value = [int(value, base=16) for value in new_value] if isinstance(new_value[0], str) else new_value
+        self._value = [int(value, base=16) for value in new_value] if isinstance(new_value[0], str) else new_value
