@@ -39,9 +39,7 @@ class EFIVarIntRO(EFIVarBase):
     @property
     def hex_value(self) -> str:
         """:return: Hexadecimal representation of the read EFI Variable"""
-        if self._value is None:
-            return '<No Value>'
-        return f'{self._value:04x}'
+        return '<No Value>' if self._value is None else f'{self._value:04x}'
 
 
 class EFIVarIntRW(EFIVarIntRO):
@@ -57,6 +55,49 @@ class EFIVarIntRW(EFIVarIntRO):
         """
         super().__init__(efivar_name, efivar_fullpath)
 
+    def _validate_new_value(self, new_value: int | str | None) -> int | None:
+        """
+        Private method called to validate the parameter provided to the value setter.
+
+        This is intended to be overloaded when subclassed to provide a higher level of value validation specific to the individual EFI Variable
+
+        Method will validate all allowed types provided to the getter, and return a clean version of new_value of either int or None type (str will be
+        converted to int)
+
+        Base class method will:
+         - Validate provided None value, returning None
+         - Validate provided integer value is in range 0x0000-0xffff, returning provided integer
+         - Validate provided string value is a hexadecimal number that can be converted to an integer in the range 0x0000-0xffff, returning string converted to integer
+         - Other values will raise an exception
+
+        :param new_value: 16-bit Integer value in range 0x0000-0xffff (as string containing hex digits or as integer) OR None. If a valid value is provided, EFI variable is updated. If None is provided, EFI variable is deleted
+        :return: Integer value of provided int|str parameter, or None
+        :raise: ValueError if provided int or string value is not in range 0x0000-0xffff
+        :raise: TypeError if provided value is not None, int, or string
+        """
+        match new_value:
+            case None:
+                # None is valid, return None
+                return None
+            case int():
+                # 16-bit integer value is valid, return provided value
+                if 0x0000 <= new_value <= 0xffff: return new_value
+                # Raise exception for other integer values
+                raise ValueError(f'Setting {self.efivar_name} EFI Variable to {new_value}. Integer must be in range [0x0000-0xffff]')
+            case str():
+                try:
+                    # Try to convert the string to an integer using base 16, then validate it is a 16-bit integer and return
+                    result = int(new_value, base=16)
+                    if 0x0000 <= result <= 0xffff: return result
+                    # String can be converted to an integer, but is outside the range. Raise ValueError, it will be caught by the except below and re-raise with a nice error message
+                    raise ValueError()
+                except ValueError:
+                    # String unable to be converted to an integer OR can be converted but is not a valid 16-bit integer
+                    raise ValueError(f'Setting {self.efivar_name} to "{new_value}". String is not a hex-number in range [0000-ffff]')
+            case _:
+                # Any other parameter type is a Type Error
+                raise TypeError(f'Setting {self.efivar_name} - new value must be integer or string containing hexadecimal value in range 0x0000-0xffff')
+
     @EFIVarIntRO.value.setter
     def value(self, new_value: int | str | None) -> None:
         """
@@ -64,29 +105,20 @@ class EFIVarIntRW(EFIVarIntRO):
 
         :param new_value: Boot entry in range 0x0000-0xffff (as string or integer) OR None. If a valid value is provided, EFI variable is updated. If None is provided, EFI variable is deleted
         """
+        # Validate provided parameter
+        new_value = self._validate_new_value(new_value)
+
+        # new_value is valid and EFI variable can be updated
         match new_value:
             case None:
-                # Provided new value is none. Delete EFI variable
+                # Provided new value is None. Delete EFI variable (may throw an exception)
                 self._log.debug(f'Deleting the {self.efivar_name} variable')
-                self._delete()
-                self._value = None
-                return
-            case int():
-                # Provided new value is an integer. Check range and raise exception if out of range
-                if new_value < 0 or new_value > 0xffff:
-                    raise ValueError(f'Setting {self.efivar_name} to {new_value}. Integer must be in range [0x0000-0xffff]')
-            case str():
-                # Provided new value is a string. Check string is a 4 character hex-number and raise exception if invalid
-                if len(new_value) != 4 or not all(c in '0123456789abcdefABCDEF' for c in new_value):
-                    raise ValueError(f'Setting {self.efivar_name} to {new_value}. String must be hex-number in range [0000-ffff]')
-                # Convert string to integer
-                new_value = int(new_value, base=16)
-            case _:
-                # Provided new value is invalid type, raise exception
-                raise TypeError(f'Setting {self.efivar_name} - new value must be integer or string containing hexadecimal value in range 0x0000-0xffff')
+                # self._delete()
 
-        # Try to update EFI variable (may throw an exception)
-        self._write(struct.pack(f'<H', new_value))
+            case int():
+                # Provided new value is an integer, try to update EFI variable (may throw an exception)
+                self._log.debug(f'Creating/updating {self.efivar_name} variable to {new_value}')
+                # self._write(struct.pack(f'<H', new_value))
 
         # EFI Update successful, update internal variable
         self._value = new_value
