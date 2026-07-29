@@ -79,8 +79,8 @@ class EFIVarIntListRW(EFIVarIntListRO):
         :raise: TypeError if provided value is not None, int, or string
         """
         match new_value:
-            case None:
-                # None is valid, return None
+            case None | []:
+                # None or empty list is valid, return None
                 return None
             case list() if all(isinstance(x, int) and not isinstance(x, bool) and (0x0000 <= x <= 0xffff) for x in new_value):
                 # new_value is a list of 16-bit integers, OK
@@ -103,7 +103,7 @@ class EFIVarIntListRW(EFIVarIntListRO):
                 raise TypeError(f'Setting {self.efivar_name} - new value must be list of integer or strings containing hexadecimal value in range 0x0000-0xffff')
 
     @EFIVarIntListRO.value.setter
-    def value(self, new_value: int | str | None) -> None:
+    def value(self, new_value: list[int | str] | None) -> None:
         """
         Update the EFI variable to the provided value (None will delete the EFI variable)
 
@@ -122,6 +122,7 @@ class EFIVarIntListRW(EFIVarIntListRO):
             case int():
                 # Provided new value is an integer, try to update EFI variable (may throw an exception)
                 self._log.debug(f'Creating/updating {self.efivar_name} variable to {new_value}')
+                # NOTE NOTE NOTE the code below is for a single int, needs to be re-written for list[int]
                 # self._write(struct.pack(f'<H', new_value))
 
         # EFI Update successful, update internal variable

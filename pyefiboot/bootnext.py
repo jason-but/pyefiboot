@@ -41,7 +41,8 @@ class BootNext(EFIVarIntRW):
         # Call base class method to validate provided value is a valid EFI Integer value. new_value is now int | None
         new_value = super()._validate_new_value(new_value)
 
-        if isinstance(new_value, int):
-            self._log.debug(f'Validating new value {new_value} is a valid/current Boot Entry')
+        if isinstance(new_value, int) and new_value not in self._current_valid_indexes():
+            # new_value is not a valid Boot Entry Index
+            raise ValueError(f'Setting {self.efivar_name} EFI Variable to {new_value}. {new_value} is not a valid Boot Entry Index')
 
         return new_value

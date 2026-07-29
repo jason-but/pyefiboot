@@ -61,6 +61,19 @@ class EFIVarBase:
         self._raw_data: bytes | None = None
         self._read()
 
+    def _current_valid_indexes(self) -> list[int]:
+        """
+        Get a list of all current Boot Entry Index numbers in the file system and return as a list of integers
+
+        Can be used to validate if a provided Boot Entry number maps to a valid - existing - Boot Entry
+
+        :return: List of integers mapping to all current EFI Boot Entry Index numbers
+        """
+        # glob() returns a list of all files matching "BootXXXX-*" where X is a hex digit
+        # file_path.name returns just the file name, file_path.name[4:8] returns string hex index of the boot entry
+        # int() converts string to integer to return list[int]
+        return [int(file_path.name[4:8], base=16) for file_path in Configuration().efivarfs_path.glob('Boot[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]-*')]
+
     def _delete(self) -> None:
         """
         Delete the EFI Variable by deleting the file
