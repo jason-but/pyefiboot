@@ -5,6 +5,7 @@ EFIVarIntList is an internal base class to read and parse and EFI Variable that 
 """
 # Import System Libraries
 import array
+import struct
 import pathlib
 
 # Import efivar sub-module classes
@@ -119,11 +120,10 @@ class EFIVarIntListRW(EFIVarIntListRO):
                 self._log.debug(f'Deleting the {self.efivar_name} variable')
                 # self._delete()
 
-            case int():
+            case list():
                 # Provided new value is an integer, try to update EFI variable (may throw an exception)
                 self._log.debug(f'Creating/updating {self.efivar_name} variable to {new_value}')
-                # NOTE NOTE NOTE the code below is for a single int, needs to be re-written for list[int]
-                # self._write(struct.pack(f'<H', new_value))
+                # self._write(struct.pack(f'<{len(new_value)}H', *new_value))
 
         # EFI Update successful, update internal variable
         self._value = new_value
