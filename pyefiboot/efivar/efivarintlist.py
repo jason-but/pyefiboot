@@ -25,10 +25,8 @@ class EFIVarIntListRO(EFIVarBase):
         :param efivar_fullpath: Fully qualified path of the EFI Variable file
         """
         super().__init__(efivar_name, efivar_fullpath)
-        # self._value: int | None = int.from_bytes(self._raw_data, byteorder="little") if self._raw_data else None
-        # self._log.info(f'Integer variable initialised to {self._value}')
         self._value: list[int] | None = array.array('H', self._raw_data).tolist()
-        self._log.info(f'Read integer list: {self._value}')
+        self._log.info(f'Integer list variable initialise to: {self._value}')
 
     def __repr__(self) -> str:
         """:return: Verbose string representation of class for debugging purposes"""
@@ -58,6 +56,42 @@ class EFIVarIntListRW(EFIVarIntListRO):
         """
         super().__init__(efivar_name, efivar_fullpath)
 
+    def _convert_param_to_list_int(self, param: list[int | str]) -> list[int]:
+        """
+        Private method to convert a list of integers or strings to a list of integers (sanitise possible mechanisms to provide input)
+
+        Otherwise, raise an exception with an appropriate error message
+
+        :param param: List of 16-bit Integer value in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
+        :return: If param is a list of 16-bit integers, return param as list[int].
+                 If param is a list of strings where each string can be converted to a list of 16-bit integers, return list where each string is converted to an integer.
+        :raise: ValueError if provided list[int] does not contain all 16-bit integers or list[str] does not contain hex-strings that can be converted to 16-bit integers
+        :raise: TypeError if provided value is not of type list[int] or list[str] or is an empty list
+        """
+        match param:
+            case []:
+                # Empty list, return as empty list
+                raise TypeError(f'Must be list of integer or strings containing hexadecimal value in range 0x0000-0xffff')
+            case list() if all(isinstance(x, int) and not isinstance(x, bool) and (0x0000 <= x <= 0xffff) for x in param):
+                # new_value is a list of 16-bit integers, OK
+                return param
+            case list() if all(isinstance(x, int) and not isinstance(x, bool) for x in param):
+                # new_value is a list of integers, but at least one is outside the valid range
+                raise ValueError(f'Must be list of integers in range [0000-0xffff]')
+            case list() if all(isinstance(x, str) for x in param):
+                try:
+                    # Try to convert the string to an integer using base 16, then validate it is a 16-bit integer and return
+                    result = [int(x, base=16) for x in param]
+                    if all(0x0000 <= x <= 0xffff for x in result): return result
+                    # String can be converted to an integer, but is outside the range. Raise ValueError, it will be caught by the except below and re-raise with a nice error message
+                    raise ValueError()
+                except ValueError:
+                    # String unable to be converted to an integer OR can be converted but is not a valid 16-bit integer
+                    raise ValueError(f'Must be list of strings where each string is a hex-number in range [0000-ffff]')
+            case _:
+                # Any other parameter type is a Type Error
+                raise TypeError(f'New value must be list of integer or strings containing hexadecimal value in range 0x0000-0xffff')
+
     def _validate_new_value(self, new_value: list[int | str] | None) -> list[int] | None:
         """
         Private method called to validate the parameter provided to the value setter.
@@ -79,29 +113,16 @@ class EFIVarIntListRW(EFIVarIntListRO):
         :raise: ValueError if provided int or string value is not in range 0x0000-0xffff
         :raise: TypeError if provided value is not None, int, or string
         """
-        match new_value:
-            case None | []:
-                # None or empty list is valid, return None
-                return None
-            case list() if all(isinstance(x, int) and not isinstance(x, bool) and (0x0000 <= x <= 0xffff) for x in new_value):
-                # new_value is a list of 16-bit integers, OK
-                return new_value
-            case list() if all(isinstance(x, int) and not isinstance(x, bool) for x in new_value):
-                # new_value is a list of integers, but at least one is outside the valid range
-                raise ValueError(f'Setting {self.efivar_name} EFI Variable to {new_value}. Must be list of integers in range [0000-0xffff]')
-            case list() if all(isinstance(x, str) for x in new_value):
-                try:
-                    # Try to convert the string to an integer using base 16, then validate it is a 16-bit integer and return
-                    result = [int(x, base=16) for x in new_value]
-                    if all(0x0000 <= x <= 0xffff for x in result): return result
-                    # String can be converted to an integer, but is outside the range. Raise ValueError, it will be caught by the except below and re-raise with a nice error message
-                    raise ValueError()
-                except ValueError:
-                    # String unable to be converted to an integer OR can be converted but is not a valid 16-bit integer
-                    raise ValueError(f'Setting {self.efivar_name} to "{new_value}". Must be list of strings where each string is a hex-number in range [0000-ffff]')
-            case _:
-                # Any other parameter type is a Type Error
-                raise TypeError(f'Setting {self.efivar_name} - new value must be list of integer or strings containing hexadecimal value in range 0x0000-0xffff')
+        # An empty list is equivalent to None and signifies deleting the variable
+        if new_value is None or new_value == []: return None
+
+        try:
+            # Not None, try to convert to list[int] and return, otherwise catch exception and provide more detailed error message
+            return self._convert_param_to_list_int(new_value)
+        except ValueError as e:
+            raise ValueError(f'Validating {self.efivar_name} EFI value ({new_value}): {e}') from None
+        except TypeError as e:
+            raise TypeError(f'Validating {self.efivar_name} EFI value ({new_value}): {e}') from None
 
     @EFIVarIntListRO.value.setter
     def value(self, new_value: list[int | str] | None) -> None:

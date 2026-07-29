@@ -42,13 +42,14 @@ class BootOrder(EFIVarIntListRW):
 
         if isinstance(new_value, list):
             # new_value is pre-validated list of integers, more checks to be done
-            if not set(new_value).issubset(self._current_valid_indexes()):
+            bad_indexes = list(set(new_value) - set(self._current_valid_indexes()))
+            if bad_indexes:
                 # At least one index in new_value is not a valid Boot Entry Index
-                raise ValueError(f'Setting {self.efivar_name} EFI Variable to {new_value}. At least one entry in {new_value} is not a valid Boot Entry Index')
+                raise ValueError(f'Validating {self.efivar_name} EFI value ({new_value}): Indexes ({', '.join(str(index) for index in bad_indexes)}) are not a valid Boot Entry Index')
 
             if len(new_value) != len(set(new_value)):
                 # Duplicate values in list
-                self._log.debug(f'Removing duplicate values from {new_value}')
+                self._log.debug(f'Validating {self.efivar_name} EFI value ({new_value}): Removing duplicate values')
                 new_value[:] = dict.fromkeys(new_value).keys()
 
         return new_value
@@ -82,5 +83,28 @@ class BootOrder(EFIVarIntListRW):
         valid_indexes = self._current_valid_indexes()
         new_order = [index for index in self._value if index in valid_indexes]
 
+        if len(new_order) == len(self._value): return
+
         self._log.debug(f'Removing invalid Boot Entries from {self._value}. Clean order will be {new_order}')
         EFIVarIntListRW.value.fset(self, new_order)
+
+    def remove_selected(self, remove_list: list[int | str]) -> None:
+        """
+        Remove all Boot Entry indexes from the current Boot Order
+        """
+        try:
+            # Validate remove_list for type/value and if list[str], convert to list[int]
+            remove_list = self._convert_param_to_list_int(remove_list)
+
+            # If any values in remove_list are not in self._value, raise exception
+            bad_indexes = list(set(remove_list) - set(self._value))
+            if bad_indexes: raise ValueError(f'Indexes ({', '.join(str(index) for index in bad_indexes)}) are not in current list {self._value}')
+
+        except ValueError as e:
+            raise ValueError(f'Removing ({remove_list}) from {self.efivar_name} EFI value: {e}') from None
+        except TypeError as e:
+            raise TypeError(f'Removing ({remove_list}) from {self.efivar_name} EFI value: {e}') from None
+
+        # remove_list contains at least one item which IS in self._value, as such new order MUST be different from old order
+        self._log.debug(f'Removing selected Boot Entries {remove_list} from {self._value}')
+        EFIVarIntListRW.value.fset(self, [item for item in self._value if item not in remove_list])
