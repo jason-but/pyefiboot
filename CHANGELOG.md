@@ -1,13 +1,16 @@
+# Roadmap
+
+ - Update `BootEntry` to support read/write/delete/create functionality
+ - Update `BootManager` to support most of the functionality of the `efibootmgr` command
+ - Add `pyefibootmgr` script to installation to bring most feature parity with `efibootmgr`
+
 # 0.0.3 (2026-xx-xx)
-
-## Under construction
-
- - Fix non updating of internal variables when setting `value` for `BootTimeout`, `BootNext` and `BootOrder` 
- - Freeze/fix API/interface to internal data for `BootEntry`
 
 ## New Features
 
- - API Documentation on GitHub Wiki for all publicly facing Classes **EXCEPT** `BootEntry` and `BootManager`
+ - API Documentation on GitHub Wiki for all publicly facing Classes **EXCEPT** `BootManager`
+ - All basic read/write EFI Variables (`BootTimeout`, `BootNext`, and `BootOrder`) now have update ability to allow write-back
+ - `BootEntry` class interface mostly stabilised with access to all internal variables
 
 ## Bug Fixes
 
@@ -16,6 +19,7 @@
 ## Code Changes
 
  - `BootEntry` moved from top-level class to `pyefiboot.bootentry` sub-module. Sub-module `filepath` moved to sub-module of `pyefiboot.bootentry`
+ - Re-factoring of class structure for Integer and Integer List EFI Variables for better code sharing and scalability
  
 # 0.0.2 (2026-07-22)
 
