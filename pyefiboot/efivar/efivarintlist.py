@@ -32,6 +32,14 @@ class EFIVarIntListRO(EFIVarBase):
         """:return: Verbose string representation of class for debugging purposes"""
         return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self._value}({self.hex_value}))'
 
+    def refresh(self) -> None:
+        """
+        Re-read the current EFI variable from NVRAM and reset internal state
+        """
+        super().refresh()
+        self._value = array.array('H', self._raw_data).tolist()
+        self._log.info(f'Integer list variable re-set to: {self._value}')
+
     @property
     def value(self) -> list[int] | None:
         """:return: Return list of integer values of the read EFI Variable"""
@@ -102,7 +110,7 @@ class EFIVarIntListRW(EFIVarIntListRO):
         be converted to list[int])
 
         Base class method will:
-         - Validate provided None value, returning None
+         - Validate provided None or empty list value, returning None
          - Validate provided list[int] value is a list of all integers, with all integers in range 0x0000-0xffff, returning provided list[int]
          - Validate provided list[str] value is a list of all strings, all strings are valid hexadecimal numbers that can be converted to an integer in the range
            0x0000-0xffff, returning list[int] where all hexadecimal strings having been converted
@@ -111,7 +119,7 @@ class EFIVarIntListRW(EFIVarIntListRO):
         :param new_value: List of 16-bit Integer value in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
         :return: list[int] value of provided list[int | str] parameter, or None
         :raise: ValueError if provided int or string value is not in range 0x0000-0xffff
-        :raise: TypeError if provided value is not None, int, or string
+        :raise: TypeError if provided value is not None, list[int], or list[str]
         """
         # An empty list is equivalent to None and signifies deleting the variable
         if new_value is None or new_value == []: return None

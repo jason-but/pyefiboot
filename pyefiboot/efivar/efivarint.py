@@ -31,6 +31,14 @@ class EFIVarIntRO(EFIVarBase):
         """:return: Verbose string representation of class for debugging purposes"""
         return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self._value}({self.hex_value}))'
 
+    def refresh(self) -> None:
+        """
+        Re-read the current EFI variable from NVRAM and reset internal state
+        """
+        super().refresh()
+        self._value = int.from_bytes(self._raw_data, byteorder="little") if self._raw_data else None
+        self._log.info(f'Integer variable re-set to {self._value}')
+
     @property
     def value(self) -> int | None:
         """:return: Return integer value of the read EFI Variable"""

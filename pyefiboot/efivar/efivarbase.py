@@ -119,6 +119,13 @@ class EFIVarBase:
         except PermissionError as e:
             print(f'ERROR: Permissions: {e}')
 
+    def refresh(self) -> None:
+        """
+        Re-read the current EFI variable from NVRAM and reset internal state
+        """
+        self._log.debug('Reloading EFI variable from NVRAM')
+        self._read()
+
     @property
     def efivar_name(self) -> str:
         """:return: EFI variable name"""
