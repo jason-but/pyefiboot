@@ -1,9 +1,8 @@
 import argparse
 import logging
-import sys
-from importlib.metadata import pass_none
-from unittest import case
 
+
+from pyefiboot import BootManager
 
 class EfibootmgrArgumentParser(argparse.ArgumentParser):
     """Argument parser for the pyefibootmgr application - subclasses argparse.ArgumentParser"""
@@ -238,13 +237,17 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
         return parsed
 
 
-def main():
+def pyefibootmgr():
     parser = EfibootmgrArgumentParser()
 
     args = parser.parse_args()
 
-    match args.actions[0]:
+    # Create the boot manager instance and read from current variables
+    boot_mgr = BootManager()
+    boot_mgr.update_from_efi()
 
+
+    match args.actions[0]:
         case 'active':
             print(f'Execute {args.actions[0]} action with parameters {args.params}')
         case 'inactive':
@@ -272,11 +275,8 @@ def main():
         case _:
             print(f'Unknown action: {args.actions[0]}')
 
-
-    # --- 4. Execution Simulation Block ---
-    print("Command line parsing and structural validation successful!")
-    print(f"Arguments parsed: {vars(args)}")
+    boot_mgr.display(args.verbose)
 
 
 if __name__ == "__main__":
-    main()
+    pyefibootmgr()
