@@ -19,8 +19,8 @@ license = "MIT"
 license-files = ["LICEN[CS]E*"]
 dependencies = []
 
-#[project.scripts]
-#pyefibootmgr = "pyefiboot.pyefibootmgr:pyefibootmgr"
+[project.scripts]
+pyefibootmgr = "pyefiboot.pyefibootmgr:pyefibootmgr"
 
 [project.urls]
 Homepage = "https://github.com/jason-but/pyefiboot"
