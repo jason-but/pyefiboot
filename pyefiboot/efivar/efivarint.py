@@ -110,7 +110,9 @@ class EFIVarIntRW(EFIVarIntRO):
         Update the EFI variable to the provided value (None will delete the EFI variable)
 
         :param new_value: Boot entry in range 0x0000-0xffff (as string or integer) OR None. If a valid value is provided, EFI variable is updated. If None is provided, EFI variable is deleted
-        :raise: Needs to be tested!!! Most likely permission based on _delete() and _write()
+        :raise: ValueError if new_value contains invalid data
+        :raise: TypeError if new_value is not or type int, str, or None
+        :raise: PermissionError if the User does not have permission to create/update/delete the variable
         """
         # Validate provided parameter
         new_value = self._validate_new_value(new_value)

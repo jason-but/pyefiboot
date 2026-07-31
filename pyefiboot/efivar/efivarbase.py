@@ -79,6 +79,8 @@ class EFIVarBase:
         Delete the EFI Variable by deleting the file
          - **WARNING: Should ONLY be called if this is a read/write variable. Subclass needs to be aware and only call if allowed for this variable name**
          - Reset self._raw_data to None to signify that the variable is non-existent
+
+        :raise: PermissionError if the file exists and the User does not have permission to delete the variable
         """
         if self.__efivar_fullpath.exists():
             self._log.debug(f'Deleting {self.__efivar_fullpath}')
@@ -106,18 +108,15 @@ class EFIVarBase:
          - Reset self._raw_data to the provided dataNone to signify that the variable is non-existent
 
         :param raw_data: bytes sequence to save as new value for the EFI Variable
+        :raise: TypeError if raw_data is not of type bytes
+        :raise: PermissionError if the User does not have permission to create/update the variable
         """
         if not isinstance(raw_data, bytes):
             raise TypeError('Raw EFI Variable Data must be a bytes sequence')
 
-        try:
-            self._log.debug(f'{self.__efivar_name}: Writing raw data sequence - {raw_data}')
-            self.__efivar_fullpath.write_bytes(self.READWRITE_ATTR + raw_data)
-            self._raw_data = raw_data
-        except FileNotFoundError as e:
-            print(f'ERROR: File not found: {e}')
-        except PermissionError as e:
-            print(f'ERROR: Permissions: {e}')
+        self._log.debug(f'{self.__efivar_name}: Writing raw data sequence - {raw_data}')
+        self.__efivar_fullpath.write_bytes(self.READWRITE_ATTR + raw_data)
+        self._raw_data = raw_data
 
     def refresh(self) -> None:
         """Re-read the current EFI variable from NVRAM and reset internal state"""

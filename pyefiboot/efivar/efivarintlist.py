@@ -137,6 +137,9 @@ class EFIVarIntListRW(EFIVarIntListRO):
         Update the EFI variable to the provided value (None will delete the EFI variable)
 
         :param new_value: List of 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
+        :raise: ValueError if new_value contains invalid data
+        :raise: TypeError if new_value is not or type list[int], list[str], or None
+        :raise: PermissionError if the User does not have permission to create/update/delete the variable
         """
         # Validate provided parameter
         new_value = self._validate_new_value(new_value)
