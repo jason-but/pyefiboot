@@ -3,19 +3,16 @@ This file implements the BootOrder class within the pyefiboot library
 
 BootOrder provides access to the current value of the BootOrder EFI Variable
 """
-# Import efivar modules and classes
-import pyefiboot.efibootmgr as efibootmgr
+# Import efivar sub-module classes
 from pyefiboot.efivar import EFIVarIntListRW
 
 
 class BootOrder(EFIVarIntListRW):
     """
-    BootOrder class - Stores the EFI Boot Order Variable
+    BootOrder class - Manages the EFI Boot Order Variable
     """
     def __init__(self) -> None:
-        """
-        Inherit from the base class to read the BootOrder variable
-        """
+        """Inherit from the base class to read the BootOrder variable"""
         super().__init__(efivar_name='BootOrder')
 
     def __str__(self) -> str:
@@ -26,16 +23,18 @@ class BootOrder(EFIVarIntListRW):
         """
         Private method called to validate the parameter provided to the value setter.
 
-        Base class method will validate that the provided value is a valid EFI Integer List variable
-
-        Following this, if the clean value is of type list[int], we need to also validate that all values in the list refer to valid and current Boot Entrys on the system
-
         Method will validate all allowed types provided to the getter, and return a clean version of new_value of either list[int] or None type (list[str] will
         be converted to list[int])
 
-        :param new_value: 16-bit Integer value in range 0x0000-0xffff (as string containing hex digits or as integer) OR None. If a valid value is provided, EFI variable is updated. If None is provided, EFI variable is deleted
-        :return: Integer value of provided int|str parameter, or None
-        :raise: ValueError if provided int or string value is not a valid and current Boot Entry on the system
+        Base class method will validate that the provided value is a valid EFI Integer List variable or None
+
+        Following this, if the clean value is of type list[int], we need to also validate that all values in the list refer to valid and current Boot Entries on
+        the system, and remove all duplicate Boot Entries from the list
+
+        :param new_value: List of 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
+        :return: list[int] value of provided list[int | str] parameter, or None
+        :raise: ValueError if all provided int or string values is not in range 0x0000-0xffff OR is not a valid and current Boot Entry on the system
+        :raise: TypeError if provided value is not None, list[int], or list[str]
         """
         # Call base class method to validate provided value is a valid EFI Integer value. new_value is now int | None
         new_value = super()._validate_new_value(new_value)
@@ -58,7 +57,7 @@ class BootOrder(EFIVarIntListRW):
         """
         Append the provided Boot Entry indexes to the end of the existing Boot Order
 
-        :param append_list: Boot entry in range 0x0000-0xffff (as string or integer). If a valid value is provided, it is appended to the end of the current list
+        :param append_list: List of Boot Entry indexes to append as 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer)
         """
         # Validate provided parameter
         append_list = self._validate_new_value(append_list)
@@ -70,7 +69,7 @@ class BootOrder(EFIVarIntListRW):
         """
         Prepend the provided Boot Entry indexes to the start of the existing Boot Order
 
-        :param prepend_list: Boot entry in range 0x0000-0xffff (as string or integer). If a valid value is provided, it is prepended to the start of the current list
+        :param prepend_list: List of Boot Entry indexes to prepend as 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer)
         """
         # Validate provided parameter
         prepend_list = self._validate_new_value(prepend_list)
@@ -91,6 +90,8 @@ class BootOrder(EFIVarIntListRW):
     def remove_selected(self, remove_list: list[int | str]) -> None:
         """
         Remove all Boot Entry indexes from the current Boot Order
+
+        :param remove_list: List of Boot Entry indexes to remove from the current Boot Order  as 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer)
         """
         try:
             # Validate remove_list for type/value and if list[str], convert to list[int]

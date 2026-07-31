@@ -9,16 +9,12 @@ from pyefiboot.efivar import EFIVarIntRO
 
 class BootCurrent(EFIVarIntRO):
     """
-    BootCurrent class - Stores the EFI Timeout Variable
-
-    Timeout is a Read-Only Integer EFI Variable
+    BootCurrent class - Manages the EFI BootCurrent Variable
     """
     def __init__(self) -> None:
-        """
-        Inherit from the base class to read the Current variable
-        """
+        """Inherit from the base class to read the BootCurrent variable"""
         super().__init__(efivar_name='BootCurrent')
 
     def __str__(self) -> str:
-        """:return: Default string representation of the Boot Current"""
+        """:return: Default string representation of the Boot Current variable"""
         return f'BootCurrent: {self.hex_value}'
