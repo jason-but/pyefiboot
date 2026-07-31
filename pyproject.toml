@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyefiboot"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Jason But", email="jbut@swin.edu.au" },
 ]
@@ -20,7 +20,7 @@ license-files = ["LICEN[CS]E*"]
 dependencies = []
 
 #[project.scripts]
-#notify-broadcast = "notify_broadcast.notify_broadcast:notify_broadcast"
+#pyefibootmgr = "pyefiboot.pyefibootmgr:pyefibootmgr"
 
 [project.urls]
 Homepage = "https://github.com/jason-but/pyefiboot"
