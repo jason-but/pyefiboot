@@ -4,7 +4,7 @@
  - Update `BootManager` to support most of the functionality of the `efibootmgr` command
  - Add `pyefibootmgr` script to installation to bring most feature parity with `efibootmgr`
 
-# 0.0.3 (2026-xx-xx)
+# 0.0.3 (2026-07-31)
 
 ## New Features
 
