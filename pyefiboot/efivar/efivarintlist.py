@@ -33,9 +33,7 @@ class EFIVarIntListRO(EFIVarBase):
         return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self._value}({self.hex_value}))'
 
     def refresh(self) -> None:
-        """
-        Re-read the current EFI variable from NVRAM and reset internal state
-        """
+        """Re-read the current EFI variable from NVRAM (base class function) and reset internal state by decoding stored value"""
         super().refresh()
         self._value = array.array('H', self._raw_data).tolist()
         self._log.info(f'Integer list variable re-set to: {self._value}')
@@ -66,11 +64,11 @@ class EFIVarIntListRW(EFIVarIntListRO):
 
     def _convert_param_to_list_int(self, param: list[int | str]) -> list[int]:
         """
-        Private method to convert a list of integers or strings to a list of integers (sanitise possible mechanisms to provide input)
+        Private method to convert a list of integers or strings to a list of integers (sanitise input parameters)
 
         Otherwise, raise an exception with an appropriate error message
 
-        :param param: List of 16-bit Integer value in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
+        :param param: List of 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
         :return: If param is a list of 16-bit integers, return param as list[int].
                  If param is a list of strings where each string can be converted to a list of 16-bit integers, return list where each string is converted to an integer.
         :raise: ValueError if provided list[int] does not contain all 16-bit integers or list[str] does not contain hex-strings that can be converted to 16-bit integers
@@ -87,8 +85,9 @@ class EFIVarIntListRW(EFIVarIntListRO):
                 # new_value is a list of integers, but at least one is outside the valid range
                 raise ValueError(f'Must be list of integers in range [0000-0xffff]')
             case list() if all(isinstance(x, str) for x in param):
+                # new_value is a list of strings, try to conver to a list of integers
                 try:
-                    # Try to convert the string to an integer using base 16, then validate it is a 16-bit integer and return
+                    # Try to convert each string to an integer using base 16, then validate all are 16-bit integers and return new list
                     result = [int(x, base=16) for x in param]
                     if all(0x0000 <= x <= 0xffff for x in result): return result
                     # String can be converted to an integer, but is outside the range. Raise ValueError, it will be caught by the except below and re-raise with a nice error message
@@ -116,9 +115,9 @@ class EFIVarIntListRW(EFIVarIntListRO):
            0x0000-0xffff, returning list[int] where all hexadecimal strings having been converted
          - Other values will raise an exception
 
-        :param new_value: List of 16-bit Integer value in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
+        :param new_value: List of 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
         :return: list[int] value of provided list[int | str] parameter, or None
-        :raise: ValueError if provided int or string value is not in range 0x0000-0xffff
+        :raise: ValueError if all provided int or string values is not in range 0x0000-0xffff
         :raise: TypeError if provided value is not None, list[int], or list[str]
         """
         # An empty list is equivalent to None and signifies deleting the variable
@@ -137,7 +136,7 @@ class EFIVarIntListRW(EFIVarIntListRO):
         """
         Update the EFI variable to the provided value (None will delete the EFI variable)
 
-        :param new_value: Boot entry in range 0x0000-0xffff (as string or integer) OR None. If a valid value is provided, EFI variable is updated. If None is provided, EFI variable is deleted
+        :param new_value: List of 16-bit Integer values in range 0x0000-0xffff (as string containing hex digits or as integer) OR None.
         """
         # Validate provided parameter
         new_value = self._validate_new_value(new_value)
@@ -147,12 +146,12 @@ class EFIVarIntListRW(EFIVarIntListRO):
             case None:
                 # Provided new value is None. Delete EFI variable (may throw an exception)
                 self._log.debug(f'Deleting the {self.efivar_name} variable')
-                # self._delete()
+                self._delete()
 
             case list():
                 # Provided new value is an integer, try to update EFI variable (may throw an exception)
                 self._log.debug(f'Creating/updating {self.efivar_name} variable to {new_value}')
-                # self._write(struct.pack(f'<{len(new_value)}H', *new_value))
+                self._write(struct.pack(f'<{len(new_value)}H', *new_value))
 
         # EFI Update successful, update internal variable
         self._value = new_value

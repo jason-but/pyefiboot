@@ -120,9 +120,7 @@ class EFIVarBase:
             print(f'ERROR: Permissions: {e}')
 
     def refresh(self) -> None:
-        """
-        Re-read the current EFI variable from NVRAM and reset internal state
-        """
+        """Re-read the current EFI variable from NVRAM and reset internal state"""
         self._log.debug('Reloading EFI variable from NVRAM')
         self._read()
 
@@ -139,7 +137,7 @@ class EFIVarBase:
 
 class EFIVarBaseOld:
     """
-    EFIVarInt class
+    EFIVarInt class - TEMPORARY CLASS NEEDED UNTIL BOOTENTRY IS UPDATED TO USE NEW BASE CLASS
 
     Base class to process an EFI Variable that contains a single integer
 
