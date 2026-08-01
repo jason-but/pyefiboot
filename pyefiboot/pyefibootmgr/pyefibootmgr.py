@@ -57,7 +57,6 @@ class PyEFIBootMgr():
         Make the nominated boot number active
 
         :param bootnum: Integer representing the boot number to make active
-        :param verbose: Should we print more information
         """
         print(f'PLACEHOLDER: Make boot entry {bootnum:04x} active')
 
@@ -71,7 +70,6 @@ class PyEFIBootMgr():
         Make the nominated boot number inactive
 
         :param bootnum: Integer representing the boot number to make inactive
-        :param verbose: Should we print more information
         """
         print(f'PLACEHOLDER: Make boot entry {bootnum:04x} inactive')
 
@@ -85,7 +83,6 @@ class PyEFIBootMgr():
         Delete the Boot Entry stored at the nominated boot number
 
         :param bootnum: Integer representing the index of the boot Entry to delete
-        :param verbose: Should we print more information
         """
         print(f'PLACEHOLDER: Delete Boot Entry {bootnum:04x}')
 
@@ -103,7 +100,6 @@ class PyEFIBootMgr():
         :param loader:
         :param label:
         :param index:
-        :param verbose: Should we print more information
         """
         print(f'PLACEHOLDER: Create new Boot Entry at index {index:04x} with (disk: {disk}, part: {part}, loader: {loader}, label: {label}) - update boot order')
 
@@ -119,7 +115,6 @@ class PyEFIBootMgr():
         :param loader:
         :param label:
         :param index:
-        :param verbose: Should we print more information
         """
         print(f'PLACEHOLDER: Create new Boot Entry at index {index:04x} with (disk: {disk}, part: {part}, loader: {loader}, label: {label}) - do NOT update boot order')
 
@@ -127,11 +122,7 @@ class PyEFIBootMgr():
 
     @register_action('remove_dups')
     def _remove_duplicate_entries_in_bootorder(self, verbose: bool) -> None:
-        """
-        Create a new boot entry with the provided parameters
-
-        :param verbose: Should we print more information
-        """
+        """Create a new boot entry with the provided parameters"""
         if verbose: print(f'Removing duplicate Boot Entries from the BootOrder variable')
         try: self.__boot_mgr.bootorder_remove_duplicates()
         except PermissionError as e:
@@ -145,7 +136,6 @@ class PyEFIBootMgr():
         Set the Boot Entry stored at the nominated boot number to be booted on next startup
 
         :param bootnext: Integer representing the index of the boot Entry to set as BootNext
-        :param verbose: Should we print more information
         """
         if verbose: print(f'Setting BootNext variable to {bootnext:04x}')
         try: self.__boot_mgr.set_bootnext(bootnext)
@@ -156,11 +146,7 @@ class PyEFIBootMgr():
 
     @register_action('delete_bootnext')
     def _delete_bootnext(self, verbose: bool) -> None:
-        """
-        Delete the BootNext variable
-
-        :param verbose: Should we print more information
-        """
+        """Delete the BootNext variable"""
         if verbose: print(f'Deleting the BootNext variable')
         try: self.__boot_mgr.delete_bootnext()
         except PermissionError as e: raise Exception(f'Could not set BootNext: {e.strerror}')
@@ -171,7 +157,6 @@ class PyEFIBootMgr():
         Set the Boot Entry stored at the nominated boot number to be booted on next startup
 
         :param bootorder: List of integers the Boot Order indexes of existing Boot Entries to try on next startup
-        :param verbose: Should we print more information
         """
         if verbose: print(f'Setting BootNext variable to {bootorder}')
         try: self.__boot_mgr.set_bootorder(bootorder)
@@ -182,11 +167,7 @@ class PyEFIBootMgr():
 
     @register_action('delete_bootorder')
     def _delete_bootorder(self, verbose: bool) -> None:
-        """
-        Delete the BootOrder variable
-
-        :param verbose: Should we print more information
-        """
+        """Delete the BootOrder variable"""
         if verbose: print(f'Deleting the BootOrder variable')
         try: self.__boot_mgr.delete_bootorder()
         except PermissionError as e: raise Exception(f'Could not remove entry from BootOrder: {e.strerror}')
@@ -197,7 +178,6 @@ class PyEFIBootMgr():
         Set the Boot Timeout to the nominated of seconds
 
         :param timeout: Integer representing the number of seconds to set as the timeout value
-        :param verbose: Should we print more information
         """
         if verbose: print(f'Setting Timeout variable to {timeout}')
         try: self.__boot_mgr.set_timeout(min(timeout, 60))
@@ -205,11 +185,7 @@ class PyEFIBootMgr():
 
     @register_action('delete_timeout')
     def _delete_timeout(self, verbose: bool) -> None:
-        """
-        Delete the Timeout variable
-
-        :param verbose: Should we print more information
-        """
+        """Delete the Timeout variable"""
         if verbose: print(f'Deleting the Timeout variable')
         try: self.__boot_mgr.delete_timeout()
         except PermissionError as e: raise Exception(f'Could not delete Timeout: {e.strerror}')
@@ -236,6 +212,9 @@ def pyefibootmgr():
     parser = EfibootmgrArgumentParser()
 
     args = parser.parse_args()
+
+    logging.basicConfig(format='%(name)s.%(funcName)s() - %(message)s', force=True)
+
 
     # Create the boot manager instance and read from current variables
     boot_mgr = PyEFIBootMgr(args)
