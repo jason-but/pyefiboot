@@ -104,9 +104,7 @@ class BootEntry(EFIVarBase):
 
     def __repr__(self) -> str:
         """:return: Verbose string representation of the Boot Entry"""
- #       return f'{self.__class__.__name__}(variable={self.efivar_name}))'
         return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}))'
-#        return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self._value}({self.hex_value}))'
 
     def delete(self) -> None:
         """
