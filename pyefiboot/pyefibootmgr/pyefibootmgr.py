@@ -57,32 +57,19 @@ class PyEFIBootMgr():
     def _active(self) -> None:
         """Make the nominated boot number (in params['bootnum']) active"""
         print(f'PLACEHOLDER: Make boot entry {self.__params['bootnum']:04x} active')
-
-        if self.__verbose: print(f'Make boot entry {self.__params['bootnum']:04X} active')
-
-        self.__log.debug(f'Make boot entry {self.__params['bootnum']:04X} active is currently a placeholder function')
+        if self.__verbose: print(f'Make boot entry {self.__params['bootnum']:04X} active ({self.__boot_mgr.boot_entries[self.__params['bootnum']]})')
 
     @register_action('inactive')
     def _inactive(self) -> None:
         """Make the nominated boot number (in params['bootnum']) inactive"""
         print(f'PLACEHOLDER: Make boot entry {self.__params['bootnum']:04x} inactive')
-
-        if self.__verbose: print(f'Make boot entry {self.__params['bootnum']:04x} inactive')
-
-        self.__log.debug(f'Make boot entry {self.__params['bootnum']:04x} inactive is currently a placeholder function')
+        if self.__verbose: print(f'Make boot entry {self.__params['bootnum']:04x} inactive ({self.__boot_mgr.boot_entries[self.__params['bootnum']]})')
 
     @register_action('delete_bootnum')
     def _delete_bootnum(self) -> None:
-        """
-        Delete the Boot Entry stored at the nominated boot number (in params['bootnum'])
-
-        :param bootnum: Integer representing the index of the boot Entry to delete
-        """
-        print(f'PLACEHOLDER: Delete Boot Entry {self.__params['bootnum']:04x}')
-
+        """Delete the Boot Entry stored at the nominated boot number (in params['bootnum'])"""
         if self.__verbose: print(f'Delete Boot Entry {self.__params['bootnum']:04x}')
-
-        self.__log.debug(f'Delete Boot Entry {self.__params['bootnum']:04x} is currently a placeholder function')
+        self.__boot_mgr.delete_entries_by_index([self.__params['bootnum']])
 
     @register_action('create')
     def _create(self) -> None:
@@ -169,7 +156,6 @@ class PyEFIBootMgr():
             self.__log.debug(f'Executing {action} action')
             try: self.ACTION_MAP[action](self)
             except KeyError as e: print(f'Requested action "{e}" is currently not implemented')
-
 
 
 def pyefibootmgr():
