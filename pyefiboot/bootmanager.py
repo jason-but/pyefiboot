@@ -6,80 +6,73 @@ class BootManager:
     def __init__(self):
         self.__log = logging.getLogger(self.__class__.__name__)
 
-        self.boot_current: BootCurrent = BootCurrent()
-        self.boot_next: BootNext = BootNext()
-        self.boot_timeout: BootTimeout = BootTimeout()
-        self.boot_order: BootOrder = BootOrder()
-        self.boot_entries: dict[str, BootEntry] = {}
-        self.kernel_entries: dict[str, BootEntry] = {}
+        self.__boot_current: BootCurrent = BootCurrent()
+        self.__boot_next: BootNext = BootNext()
+        self.__boot_timeout: BootTimeout = BootTimeout()
+        self.__boot_order: BootOrder = BootOrder()
+        self.__boot_entries: dict[str, BootEntry] = {}
+        self.__kernel_entries: dict[int, BootEntry] = {}
 
-    def _create_class_or_none(self, cls, log_warning: bool = True, *args, **kwargs):
-        try:
-            return cls(*args, **kwargs)
-        except Exception as e:
-            if log_warning: self.__log.warning(f'Exception raised while initializing BootManager: {e}')
-            return None
+        self._read_boot_entries()
 
-    def update_from_efi(self):
-        # Read basic EFI Boot variables
-        self.boot_current.refresh()
-        self.boot_next.refresh()
-        self.boot_timeout.refresh()
-        self.boot_order.refresh()
+    def _read_boot_entries(self):
+        """(Re-)Create the BootEntry objects for all current Boot Entries and store copies in the __boot_entries and __kernel_entries dictionaries"""
+        self.__boot_entries = {}
+        self.__kernel_entries = {}
 
-        for boot_entry_file in sorted(Configuration().efivarfs_path.glob('Boot[!N]???-*')):
+        # For each Boot Entry file in the efifs file system
+        for boot_entry_file in sorted(Configuration().efivarfs_path.glob('Boot[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]-*')):
+            # Create the BootEntry instance
             entry = BootEntry(efivar_fullpath=boot_entry_file)
-            self.boot_entries[entry.hex_index] = entry
+            # Add entry to __boot_entries
+            self.__boot_entries[entry.index] = entry
             if entry.kernel_file:
-                self.kernel_entries[entry.kernel_file] = entry
+                # If BootEntry has a kernel file specified, add to __kernel_entries as well
+                self.__kernel_entries[entry.kernel_file] = entry
 
-    def set_timeout(self, timeout: int):
-        self.__log.debug(f'Setting BootTimeout to {timeout} seconds')
-        # noinspection PyPropertyAccess
-        self.boot_timeout.value = timeout
+    def refresh(self):
+        """Update all EFI variables by re-reading from NVRAM"""
+        self.__boot_current.refresh()
+        self.__boot_next.refresh()
+        self.__boot_timeout.refresh()
+        self.__boot_order.refresh()
 
-    def delete_timeout(self):
-        self.__log.debug(f'Deleting BootTimeout')
-        # noinspection PyPropertyAccess
-        self.boot_timeout.value = None
+        self._read_boot_entries()
 
-    def set_bootnext(self, index: int):
-        self.__log.debug(f'Setting BootNext to {index:04X}')
-        # noinspection PyPropertyAccess
-        self.boot_next.value = index
+    @property
+    def boottimeout(self) -> BootTimeout:
+        """:return: Return internal BootTimeout variable"""
+        return self.__boot_timeout
 
-    def delete_bootnext(self):
-        self.__log.debug(f'Deleting BootNext')
-        # noinspection PyPropertyAccess
-        self.boot_next.value = None
+    @property
+    def bootnext(self) -> BootNext:
+        """:return: Return internal BootNext variable"""
+        return self.__boot_next
 
-    def set_bootorder(self, indexes: list[int]):
-        self.__log.debug(f'Setting BootOrder to {indexes}')
-        # noinspection PyPropertyAccess
-        self.boot_order.value = indexes
+    @property
+    def bootcurrent(self) -> BootCurrent:
+        """:return: Return internal BootCurrent variable"""
+        return self.__boot_current
 
-    def delete_bootorder(self):
-        self.__log.debug(f'Deleting BootOrder')
-        # noinspection PyPropertyAccess
-        self.boot_order.value = None
-
-    def bootorder_remove_duplicates(self):
-        self.__log.debug(f'Removing BootOrder duplicates')
-        self.boot_order.remove_duplicate_entries()
+    @property
+    def bootorder(self) -> BootOrder:
+        """:return: Return internal BootOrder variable"""
+        return self.__boot_order
 
     def delete_entries_by_index(self, indexes: list[int]):
         print(f'Deleting the following boot entries: {indexes}')
 
     def display(self, verbose: bool = False):
-        if self.boot_current: print(self.boot_current)
-        if self.boot_next: print(self.boot_next)
-        if self.boot_timeout: print(self.boot_timeout)
-        if self.boot_order: print(self.boot_order)
+        """
+        Display all available Boot Entries on the system
 
-        for num, boot_entry in self.boot_entries.items():
-            print(boot_entry)
-            if verbose:
-                print(' - File Path:')
-                for path in boot_entry.file_paths:
-                    print(f'    - {path}')
-                print(f' - Optional Data: {boot_entry.optional_data}')
+        :param verbose: If True, display verbose messages
+        """
+        print(self.__boot_current)
+        print(self.__boot_next)
+        print(self.__boot_timeout)
+        print(self.__boot_order)
+
+        # Display all available boot entries
+        for boot_entry in self.__boot_entries.values():
+            print(boot_entry.verbose_str() if verbose else boot_entry)

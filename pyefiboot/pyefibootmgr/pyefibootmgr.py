@@ -46,166 +46,130 @@ class PyEFIBootMgr():
 
         self.__actions = args.actions
         self.__params = args.params
+        self.__quiet = args.quiet
+        self.__verbose = False if self.__quiet else args.verbose
         self.__log.debug(f'Registered actions: {self.__actions}')
         self.__log.debug(f'Registered params: {self.__params}')
 
         self.__boot_mgr = BootManager()
 
     @register_action('active')
-    def _active(self, bootnum: int, verbose: bool) -> None:
-        """
-        Make the nominated boot number active
+    def _active(self) -> None:
+        """Make the nominated boot number (in params['bootnum']) active"""
+        print(f'PLACEHOLDER: Make boot entry {self.__params['bootnum']:04x} active')
 
-        :param bootnum: Integer representing the boot number to make active
-        """
-        print(f'PLACEHOLDER: Make boot entry {bootnum:04x} active')
+        if self.__verbose: print(f'Make boot entry {self.__params['bootnum']:04X} active')
 
-        if verbose: print(f'Make boot entry {bootnum:04x} active')
-
-        self.__log.debug(f'Make boot entry {bootnum:04x} active is currently a placeholder function')
+        self.__log.debug(f'Make boot entry {self.__params['bootnum']:04X} active is currently a placeholder function')
 
     @register_action('inactive')
-    def _inactive(self, bootnum: int, verbose: bool) -> None:
-        """
-        Make the nominated boot number inactive
+    def _inactive(self) -> None:
+        """Make the nominated boot number (in params['bootnum']) inactive"""
+        print(f'PLACEHOLDER: Make boot entry {self.__params['bootnum']:04x} inactive')
 
-        :param bootnum: Integer representing the boot number to make inactive
-        """
-        print(f'PLACEHOLDER: Make boot entry {bootnum:04x} inactive')
+        if self.__verbose: print(f'Make boot entry {self.__params['bootnum']:04x} inactive')
 
-        if verbose: print(f'Make boot entry {bootnum:04x} inactive')
-
-        self.__log.debug(f'Make boot entry {bootnum:04x} inactive is currently a placeholder function')
+        self.__log.debug(f'Make boot entry {self.__params['bootnum']:04x} inactive is currently a placeholder function')
 
     @register_action('delete_bootnum')
-    def _delete_bootnum(self, bootnum: int, verbose: bool) -> None:
+    def _delete_bootnum(self) -> None:
         """
-        Delete the Boot Entry stored at the nominated boot number
+        Delete the Boot Entry stored at the nominated boot number (in params['bootnum'])
 
         :param bootnum: Integer representing the index of the boot Entry to delete
         """
-        print(f'PLACEHOLDER: Delete Boot Entry {bootnum:04x}')
+        print(f'PLACEHOLDER: Delete Boot Entry {self.__params['bootnum']:04x}')
 
-        if verbose: print(f'Delete Boot Entry {bootnum:04x}')
+        if self.__verbose: print(f'Delete Boot Entry {self.__params['bootnum']:04x}')
 
-        self.__log.debug(f'Delete Boot Entry {bootnum:04x} is currently a placeholder function')
+        self.__log.debug(f'Delete Boot Entry {self.__params['bootnum']:04x} is currently a placeholder function')
 
     @register_action('create')
-    def _create(self, disk: str, part: str, loader: str, label: str, index: int, verbose: bool) -> None:
-        """
-        Create a new boot entry with the provided parameters
+    def _create(self) -> None:
+        """Create a new boot entry using information from self.__params"""
+        print(f'PLACEHOLDER: Create new Boot Entry at index {self.__params['index']:04X} with (disk: {self.__params['disk']}, part: {self.__params['part']}, loader: {self.__params['loader']}, label: {self.__params['label']}) - update boot order')
 
-        :param disk:
-        :param part:
-        :param loader:
-        :param label:
-        :param index:
-        """
-        print(f'PLACEHOLDER: Create new Boot Entry at index {index:04x} with (disk: {disk}, part: {part}, loader: {loader}, label: {label}) - update boot order')
-
-        if verbose: print(f'Creating a new Boot Entry')
+        if self.__verbose: print(f'Creating a new Boot Entry')
 
     @register_action('create_only')
-    def _create_only(self, disk: str, part: str, loader: str, label: str, index: int, verbose: bool) -> None:
-        """
-        Create a new boot entry with the provided parameters
+    def _create_only(self) -> None:
+        """Create a new boot entry using information from self.__params"""
+        print(f'PLACEHOLDER: Create new Boot Entry at index {self.__params['index']:04X} with (disk: {self.__params['disk']}, part: {self.__params['part']}, loader: {self.__params['loader']}, label: {self.__params['label']}) - do NOT update boot order')
 
-        :param disk:
-        :param part:
-        :param loader:
-        :param label:
-        :param index:
-        """
-        print(f'PLACEHOLDER: Create new Boot Entry at index {index:04x} with (disk: {disk}, part: {part}, loader: {loader}, label: {label}) - do NOT update boot order')
-
-        if verbose: print(f'Creating a new Boot Entry')
+        if self.__verbose: print(f'Creating a new Boot Entry')
 
     @register_action('remove_dups')
-    def _remove_duplicate_entries_in_bootorder(self, verbose: bool) -> None:
+    def _remove_duplicate_entries_in_bootorder(self) -> None:
         """Create a new boot entry with the provided parameters"""
-        if verbose: print(f'Removing duplicate Boot Entries from the BootOrder variable')
-        try: self.__boot_mgr.bootorder_remove_duplicates()
+        if self.__verbose: print(f'Removing duplicate Boot Entries from the BootOrder variable')
+        try: self.__boot_mgr.bootorder.remove_duplicate_entries()
         except PermissionError as e:
             raise Exception(f'Could not set BootOrder: {e.strerror}')
         except (ValueError, TypeError) as e:
             raise Exception(f'Invalid BootOrder order entry: {e}')
 
     @register_action('bootnext')
-    def _set_bootnext(self, bootnext: int, verbose: bool) -> None:
-        """
-        Set the Boot Entry stored at the nominated boot number to be booted on next startup
-
-        :param bootnext: Integer representing the index of the boot Entry to set as BootNext
-        """
-        if verbose: print(f'Setting BootNext variable to {bootnext:04x}')
-        try: self.__boot_mgr.set_bootnext(bootnext)
+    def _set_bootnext(self) -> None:
+        """Set the Boot Entry stored at the nominated boot number (in params['bootnext']) to be booted on next startup"""
+        if self.__verbose: print(f'Setting BootNext variable to {self.__params['bootnext']:04X}')
+        try: self.__boot_mgr.bootnext.value = self.__params['bootnext']
         except PermissionError as e:
             raise Exception(f'Could not set BootNext: {e.strerror}')
         except (ValueError, TypeError) as e:
             raise Exception(f'Invalid BootEntry: {e}')
 
     @register_action('delete_bootnext')
-    def _delete_bootnext(self, verbose: bool) -> None:
+    def _delete_bootnext(self) -> None:
         """Delete the BootNext variable"""
-        if verbose: print(f'Deleting the BootNext variable')
-        try: self.__boot_mgr.delete_bootnext()
+        if self.__verbose: print(f'Deleting the BootNext variable')
+        try: self.__boot_mgr.bootnext.value = None
         except PermissionError as e: raise Exception(f'Could not set BootNext: {e.strerror}')
 
     @register_action('bootorder')
-    def _set_bootorder(self, bootorder: list[int], verbose: bool) -> None:
-        """
-        Set the Boot Entry stored at the nominated boot number to be booted on next startup
-
-        :param bootorder: List of integers the Boot Order indexes of existing Boot Entries to try on next startup
-        """
-        if verbose: print(f'Setting BootNext variable to {bootorder}')
-        try: self.__boot_mgr.set_bootorder(bootorder)
+    def _set_bootorder(self) -> None:
+        """Set the BootOrder to be the list of nominated boot entries (in params['bootorder'])"""
+        if self.__verbose: print(f'Setting BootOrder variable to: {','.join(f'i:04X' for i in self.__params['bootorder'])}')
+        try: self.__boot_mgr.bootorder.value = self.__params['bootorder']
         except PermissionError as e:
             raise Exception(f'Could not set BootOrder: {e.strerror}')
         except (ValueError, TypeError) as e:
-            raise Exception(f'Invalid BootOrder order entry ({','.join(f'{i:04X}' for i in bootorder)}): {e}')
+            raise Exception(f'Invalid BootOrder order entry ({','.join(f'{i:04X}' for i in self.__params['bootorder'])}): {e}')
 
     @register_action('delete_bootorder')
-    def _delete_bootorder(self, verbose: bool) -> None:
+    def _delete_bootorder(self) -> None:
         """Delete the BootOrder variable"""
-        if verbose: print(f'Deleting the BootOrder variable')
-        try: self.__boot_mgr.delete_bootorder()
+        if self.__verbose: print(f'Deleting the BootOrder variable')
+        try: self.__boot_mgr.bootorder.value = None
         except PermissionError as e: raise Exception(f'Could not remove entry from BootOrder: {e.strerror}')
 
     @register_action('timeout')
-    def _set_timeout(self, timeout: int, verbose: bool) -> None:
-        """
-        Set the Boot Timeout to the nominated of seconds
-
-        :param timeout: Integer representing the number of seconds to set as the timeout value
-        """
-        if verbose: print(f'Setting Timeout variable to {timeout}')
-        try: self.__boot_mgr.set_timeout(min(timeout, 60))
+    def _set_timeout(self) -> None:
+        """Set the Boot Timeout to the nominated (in params['timeout']) number of seconds with a max value of 60"""
+        if self.__verbose: print(f'Setting Timeout variable to {self.__params['timeout']}')
+        try: self.__boot_mgr.boottimeout.value = min(self.__params['timeout'], 60)
         except (PermissionError, ValueError) as e: raise Exception(f'Could not set Timeout: {e.strerror if isinstance(e, PermissionError) else e}')
 
     @register_action('delete_timeout')
-    def _delete_timeout(self, verbose: bool) -> None:
+    def _delete_timeout(self) -> None:
         """Delete the Timeout variable"""
-        if verbose: print(f'Deleting the Timeout variable')
-        try: self.__boot_mgr.delete_timeout()
+        if self.__verbose: print(f'Deleting the Timeout variable')
+        try: self.__boot_mgr.boottimeout.value = None
         except PermissionError as e: raise Exception(f'Could not delete Timeout: {e.strerror}')
 
     @register_action('No action')
-    def _display_boot_settings(self, verbose: bool, **kwargs) -> None:
-        self.__boot_mgr.display(verbose)
+    def _display_boot_settings(self) -> None:
+        """Print current EFI Boot Configuration to screen"""
+        if self.__quiet: return
+        if self.__verbose: print(f'Displaying Current Boot Settings')
+        self.__boot_mgr.display(self.__verbose)
 
     def execute(self) -> None:
-        self.__boot_mgr.update_from_efi()
-
+        """Execute all registered actions"""
         for action in self.__actions:
             self.__log.debug(f'Executing {action} action')
-            try:
-                self.ACTION_MAP[action](self, **self.__params)
-            except KeyError as e:
-                print(f'Requested action "{e}" is currently not implemented')
-            except Exception as e:
-                print(e)
-                return
+            try: self.ACTION_MAP[action](self)
+            except KeyError as e: print(f'Requested action "{e}" is currently not implemented')
+
 
 
 def pyefibootmgr():
@@ -215,13 +179,10 @@ def pyefibootmgr():
 
     logging.basicConfig(format='%(name)s.%(funcName)s() - %(message)s', force=True)
 
-
     # Create the boot manager instance and read from current variables
-    boot_mgr = PyEFIBootMgr(args)
-    boot_mgr.execute()
+    try:
+        boot_mgr = PyEFIBootMgr(args)
+        boot_mgr.execute()
+    except Exception as e:
+        print(f'ERROR: {e}')
 
-#    boot_mgr.display(args.verbose)
-
-
-if __name__ == "__main__":
-    pyefibootmgr()

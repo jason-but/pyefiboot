@@ -79,9 +79,14 @@ class BootEntry(EFIVarBaseOld):
         """:return: Default string representation of the Boot Entry"""
         return f'Boot{self.__index:04X}{'*' if self.__is_active else ''} {self.__label}'
 
+    def verbose_str(self) -> str:
+        """:return: Default string representation of the Boot Entry"""
+        return f'{self}\n - File Path:{'\n    - ' if len(self.file_paths) > 1 else '     '}{'\n    - '.join(self.file_paths)}\n - Optional Data: {self.__optional_data}'
+
     def __repr__(self) -> str:
         """:return: Verbose string representation of the Boot Entry"""
-        return f'{self} - {self.__path_list} - Extra({self.__optional_data})'
+        return f'{self.__class__.__name__}(variable={self.efivar_name}))'
+        # return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}))'
 
     def delete(self) -> None:
         """
