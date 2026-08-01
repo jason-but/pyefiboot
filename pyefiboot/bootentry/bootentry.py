@@ -2,12 +2,13 @@
 import struct
 import pathlib
 
-from pyefiboot.efivar import EFIVarBaseOld
+# from pyefiboot import BootManager
+from pyefiboot.efivar import EFIVarBase
 from pyefiboot.bootentry.filepath import FilePath
 from pyefiboot.bootentry.optionaldata import OptionalData
 
 
-class BootEntry(EFIVarBaseOld):
+class BootEntry(EFIVarBase):
     """
     BootEntry class - Stores the EFI Boot Order Variable
 
@@ -35,6 +36,18 @@ class BootEntry(EFIVarBaseOld):
         self.__index: int = int(self.__hex_index, base=16)
         self._log.debug(f'Boot Entry Index: {self.__hex_index} ({self.__index})')
 
+        self.__attributes: int = 0
+        self.__path_list_length: int = 0
+        self.__is_active: bool = False
+        self.__is_force_reconnecting: bool = False
+        self.__is_hidden: bool = False
+        self.__label: str = ''
+        self.__path_list: FilePath | None = None
+        self.__optional_data: OptionalData | None = None
+
+        self._parse_raw_data()
+
+    def _parse_raw_data(self) -> None:
         # Layout of data within BootEntry
         # +------------+---------------+------------------------------------+---------------------+---------------+
         # |   32-bits  |    16-bits    |           unknown length           | File Path Len bytes | rest of data  |
@@ -75,6 +88,12 @@ class BootEntry(EFIVarBaseOld):
         self.__optional_data = OptionalData(self._raw_data[optional_data_index:])
         self._log.debug(f'Optional Data: {self.__optional_data}')
 
+    def refresh(self) -> None:
+        """Re-read the current EFI variable from NVRAM (base class function) and reset internal state by decoding stored value"""
+        super().refresh()
+        self._parse_raw_data()
+        self._log.info(f'Boot Entry details reloaded')
+
     def __str__(self) -> str:
         """:return: Default string representation of the Boot Entry"""
         return f'Boot{self.__index:04X}{'*' if self.__is_active else ''} {self.__label}'
@@ -85,8 +104,9 @@ class BootEntry(EFIVarBaseOld):
 
     def __repr__(self) -> str:
         """:return: Verbose string representation of the Boot Entry"""
-        return f'{self.__class__.__name__}(variable={self.efivar_name}))'
-        # return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}))'
+ #       return f'{self.__class__.__name__}(variable={self.efivar_name}))'
+        return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}))'
+#        return f'{self.__class__.__name__}(variable={self.efivar_name}, path={self.efivar_fullpath}, value={self._value}({self.hex_value}))'
 
     def delete(self) -> None:
         """
@@ -94,9 +114,8 @@ class BootEntry(EFIVarBaseOld):
 
         **NOTE**: Class instance will be invalid after calling this method. Should delete instance
         """
-        self._log.debug(f'Deleting Boot Entry {self.__index} UEFI variable')
-        self._log.info('Functionality not implemented yet')
-        pass
+        self._log.debug(f'Deleting Boot Entry {self.__index} variable')
+        self._delete()
 
     # ---------- PROPERTIES ----------
     @property
