@@ -77,7 +77,7 @@ class BootEntry(EFIVarBaseOld):
 
     def __str__(self) -> str:
         """:return: Default string representation of the Boot Entry"""
-        return f'Boot{self.__index}{'*' if self.__is_active else ''} {self.__label}'
+        return f'Boot{self.__index:04X}{'*' if self.__is_active else ''} {self.__label}'
 
     def __repr__(self) -> str:
         """:return: Verbose string representation of the Boot Entry"""
