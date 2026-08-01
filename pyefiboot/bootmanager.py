@@ -77,6 +77,7 @@ class BootManager:
                 # Try to extract the boot entry with index, exception will be raised if it does not exist
                 bootentry = self.__boot_entries[index]
                 print(f'Need to delete boot entry: Boot{bootentry.hex_index}')
+                bootentry.delete()
                 if bootentry.kernel_file:
                     self._delete_from_kernel_entry(bootentry.kernel_file, bootentry)
             except KeyError as e:
@@ -88,6 +89,7 @@ class BootManager:
                 print(f'Deleting all boot entries associated with {kernel_file}')
                 for bootentry in self.__kernel_entries[kernel_file]:
                     print(f'Need to delete boot entry: {bootentry.hex_index}')
+                    bootentry.delete()
                     del self.__boot_entries[bootentry.index]
                 del self.__kernel_entries[kernel_file]
 
