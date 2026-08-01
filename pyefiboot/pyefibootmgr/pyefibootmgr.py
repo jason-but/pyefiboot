@@ -69,7 +69,11 @@ class PyEFIBootMgr():
     def _delete_bootnum(self) -> None:
         """Delete the Boot Entry stored at the nominated boot number (in params['bootnum'])"""
         if self.__verbose: print(f'Delete Boot Entry {self.__params['bootnum']:04x}')
-        self.__boot_mgr.delete_entries_by_index([self.__params['bootnum']])
+        try: self.__boot_mgr.delete_entries_by_index([self.__params['bootnum']])
+        except PermissionError as e:
+            raise Exception(f'Could not delete Boot Entry: {e.strerror}')
+        except (ValueError, TypeError) as e:
+            raise Exception(f'Could not delete Boot Entry: {e}')
 
     @register_action('create')
     def _create(self) -> None:
