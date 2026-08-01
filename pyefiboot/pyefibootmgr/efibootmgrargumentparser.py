@@ -270,7 +270,7 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
             case _: self.error(f"The following options are mutually exclusive and cannot be run together: {', '.join(parsed.actions)}")
 
         # Extract other provided command line parameters
-        params = {k: v for k, v in vars(parsed).items() if v is not None and k is not 'actions'}
+        params = {k: v for k, v in vars(parsed).items() if v is not None and k not in ['actions', 'log_level']}
 
         match parsed.actions[0]:
             case 'active' | 'inactive' | 'delete_bootnum':
