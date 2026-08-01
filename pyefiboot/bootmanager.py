@@ -33,6 +33,9 @@ class BootManager:
             if entry.kernel_file:
                 self.kernel_entries[entry.kernel_file] = entry
 
+    def delete_entries_by_index(self, indexes: list[int]):
+        print(f'Deleting the following boot entries: {indexes}')
+
     def display(self, verbose: bool = False):
         if self.boot_current: print(self.boot_current)
         if self.boot_next: print(self.boot_next)

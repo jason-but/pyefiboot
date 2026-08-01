@@ -1,11 +1,62 @@
-import argparse
+"""
+This file implements the EfibootmgrArgumentParser class which creates the subclasses argparse.ArgumentParser to create the argument parser for the pyefibootmgr
+application
+
+EfibootmgrArgumentParser is an internal class used by the pyefibootmgr application
+
+Currently Implemented CLI args
+ -a | --active         Set bootnum active.
+ -A | --inactive       Set bootnum inactive.
+ -b | --bootnum XXXX   Modify BootXXXX (hex).
+ -B | --delete-bootnum Delete bootnum.
+ -c | --create         Create new variable bootnum and add to bootorder at index (-I).
+ -C | --create-only    Create new variable bootnum and do not add to bootorder.
+ -d | --disk disk      Disk containing boot loader (defaults to /dev/sda).
+ -D | --remove-dups    Remove duplicate values from BootOrder.
+ -I | --index number   When creating an entry, insert it in bootorder at specified position (default: 0).
+ -l | --loader name     (Defaults to "\EFI\Gentoo\grub.efi").
+ -L | --label label     Boot manager display label (defaults to "Linux").
+ -n | --bootnext XXXX   Set BootNext to XXXX (hex).
+ -N | --delete-bootnext Delete BootNext.
+ -o | --bootorder XXXX,YYYY,ZZZZ,...     Explicitly set BootOrder (hex).
+ -O | --delete-bootorder Delete BootOrder.
+ -p | --part part        Partition containing loader (defaults to 1 on partitioned devices).
+ -t | --timeout seconds  Set boot manager timeout waiting for user input.
+ -T | --delete-timeout   Delete Timeout.
+ -v | --verbose          Print additional information.
+
+Not implemented but should be CLI args
+ -g | --gpt            Force disk with invalid PMBR to be treated as GPT.
+ -u | --unicode | --UCS-2  Handle extra args as UCS-2 (default is ASCII).
+
+Not implemented but not sure if should be CLI args
+ -e | --edd [1|3]      Force boot entries to be created using EDD 1.0 or 3.0 info.
+ -E | --device num     EDD 1.0 device number (defaults to 0x80).
+      --full-dev-path  Use a full device path.
+      --file-dev-path  Use an abbreviated File() device path.
+ -f | --reconnect      Re-connect devices after driver is loaded.
+ -F | --no-reconnect   Do not re-connect devices after driver is loaded.
+ -i | --iface name     Create a netboot entry for the named interface.
+ -m | --mirror-below-4G t|f Mirror memory below 4GB.
+ -M | --mirror-above-4G X Percentage memory to mirror above 4GB.
+ -q | --quiet            Be quiet.
+ -r | --driver           Operate on Driver variables, not Boot Variables.
+ -w | --write-signature  Write unique sig to MBR if needed.
+ -y | --sysprep          Operate on SysPrep variables, not Boot Variables.
+ -@ | --append-binary-args file  Append extra args from file (use "-" for stdin).
+ -V | --version          Return version and exit.
+"""
+# Import System Libraries
 import logging
+import argparse
 
-
-from pyefiboot import BootManager
 
 class EfibootmgrArgumentParser(argparse.ArgumentParser):
-    """Argument parser for the pyefibootmgr application - subclasses argparse.ArgumentParser"""
+    """
+    Argument parser for the pyefibootmgr application - subclasses argparse.ArgumentParser
+
+    Provides a sub-set of the efibootmgr command line interface for parsing and presenting to the pyefibootmgr application
+    """
     @classmethod
     def hex_to_int(cls, bootnum: str) -> int:
         """
@@ -70,8 +121,8 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
             :param option_string: Actual option (e.g. --hint)
             """
             # If this is the first action being parsed, create the actions name in the namespace
-            if not hasattr(namespace, 'actions'):
-                setattr(namespace, 'actions', [])
+            # if not hasattr(namespace, 'actions'):
+            #     setattr(namespace, 'actions', [])
 
             # Append the selected option/action to the actions name in the namespace
             namespace.actions.append(self.clean_name)
@@ -95,8 +146,8 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
             :param option_string: Actual option (e.g. --hint)
             """
             # If this is the first action being parsed, create the actions name in the namespace
-            if not hasattr(namespace, 'actions'):
-                setattr(namespace, 'actions', [])
+            # if not hasattr(namespace, 'actions'):
+            #     setattr(namespace, 'actions', [])
 
             # Append the selected option/action to the actions name in the namespace
             namespace.actions.append(self.dest)
@@ -146,6 +197,9 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
 
     def __add_arguments(self):
         """ Add command line arguments to the argument parser """
+
+        self.set_defaults(actions=[])
+
         # Selection of bootnum for specific arguments
         self.add_argument('-b', '--bootnum', type=EfibootmgrArgumentParser.ValidBootNum(), metavar='XXXX', help='Modify a specific boot entry (4-digit hex).')
 
@@ -158,7 +212,6 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
         self.add_argument('-c', '--create', action=EfibootmgrArgumentParser.StoreFlagAsAction, help='Create new boot option and add to bootorder.')
         self.add_argument('-C', '--create-only', action=EfibootmgrArgumentParser.StoreFlagAsAction, help='Create new boot option without changing bootorder.')
         self.add_argument('-D', '--remove-dups', action=EfibootmgrArgumentParser.StoreFlagAsAction, help='Remove duplicate boot profiles.')
-        self.add_argument('-f', '--forbid-reorder', action='store_true', help='Do not reorder BootOrder on entry creation.')
         self.add_argument('-n', '--bootnext', type=EfibootmgrArgumentParser.ValidBootNum(), action=EfibootmgrArgumentParser.StoreParamAsAction, metavar='XXXX', help='Set BootNext for the next boot cycle.')
         self.add_argument('-N', '--delete-bootnext', action=EfibootmgrArgumentParser.StoreFlagAsAction, help="Delete BootNext.")
         self.add_argument('-o', '--bootorder', type=EfibootmgrArgumentParser.ValidBootOrder(), action=EfibootmgrArgumentParser.StoreParamAsAction, metavar='XXXX,YYYY,...', help='Explicitly set BootOrder.')
@@ -168,10 +221,11 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
 
         # Other Action parameters/options (often used with -c / -C)
         self.add_argument('-d', '--disk', default='/dev/sda', help='The disk containing the EFI System Partition (default: /dev/sda).')
+        self.add_argument('-I', '--index', type=int, default=0, metavar='N', help='When creating an entry, insert it in bootorder at specified position (default: 0)')
         self.add_argument('-p', '--part', type=int, default=1, help='The partition number holding the EFI System Partition (default: 1).')
         self.add_argument('-l', '--loader', help='Path to the EFI loader executable (e.g., "\\EFI\\ubuntu\\grubx64.efi").')
         self.add_argument('-L', '--label', help='User-friendly text label for the new boot entry.')
-        self.add_argument("-u", "--unicode", action='store_true', help='Pass extra command line options as UC-2 encoded string.')
+        # self.add_argument("-u", "--unicode", action='store_true', help='Pass extra command line options as UC-2 encoded string.')
 
         # Global options
         self.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
@@ -186,97 +240,52 @@ class EfibootmgrArgumentParser(argparse.ArgumentParser):
 
         :return: Return the parsed arguments Namespace as required by parse_args()
         """
-        def check_invalid_params(params, required_params: list[str], invalid_params: list[str]) -> None:
+        def check_invalid_params(params: dict, required_params: list[str], invalid_params: list[str]) -> None:
             """
             Check that the provided parameters in the parsed namespace exist, and that the invalid parameters are missing or set to None
 
             Raise an argparse.error() if processing fails
 
-            :param params: argparse Namespace after parsing
+            :param params: Dictionary containing parameter->value to check
             :param required_params: List of parameter names that must have a value in the namespace
             :param invalid_params: List of parameter names that must not have a value in the namespace
             """
-            error_template: str = f'Selected action ({parsed.actions[0]})' if parsed.actions else 'Selected action ({parsed.actions[0]})'
             # Get list of missing parameters, if any exist, raise an error
-            missing_params = [f'{p}' for p in required_params if params[p] is None]
+            missing_params = [f'{p}' for p in required_params if p not in params]
             if missing_params: self.error(f'Selected action ({parsed.actions[0]}) requires the following missing parameter(s): {', '.join(missing_params)}')
 
             # Get list of invalid parameters, if any exist, raise an error
             invalid_params = [f'{k}={v}' for k, v in params.items() if k in invalid_params and v is not None]
-            if invalid_params: self.error(f'Selected action ({parsed.actions[0] if 'actions' in parsed else 'No action'}) does not allow the following invalid parameter(s): {', '.join(invalid_params)}')
+            if invalid_params: self.error(f'Selected action ({parsed.actions[0]}) does not allow the following invalid parameter(s): {', '.join(invalid_params)}')
 
         # Call base class method to parse arguments and store in internal variable
         parsed = super().parse_args(args=args, namespace=namespace)
 
-        # No action specified, selected action is to display current configuration
-        if 'actions' not in parsed: parsed.actions = ['display']
+        # Extract selected action
+        match len(parsed.actions):
+            case 0 | 1:
+                # Valid number of actions selected (0 or 1), append 'No action' to cause display of boot entries
+                assert isinstance(parsed.actions, list)
+                parsed.actions.append('No action')
+            case _: self.error(f"The following options are mutually exclusive and cannot be run together: {', '.join(parsed.actions)}")
 
-        # Ensure that mutually exclusive actions have not been specified
-        if len(parsed.actions) > 1: self.error(f"The following options are mutually exclusive and cannot be run together: {', '.join(parsed.actions)}")
+        # Extract other provided command line parameters
+        params = {k: v for k, v in vars(parsed).items() if v is not None and k is not 'actions'}
 
         match parsed.actions[0]:
             case 'active' | 'inactive' | 'delete_bootnum':
-                # These three options require bootnum to be specified and loader AND label to NOT be specified
-                check_invalid_params(params=vars(parsed), required_params=['bootnum'], invalid_params=['loader', 'label'])
-                parsed.params = {'bootnum': parsed.bootnum}
+                # Remove default params not needed by these actions
+                params = {k: v for k, v in params.items() if k not in ['index', 'disk', 'part']}
+                check_invalid_params(params=params, required_params=['bootnum'], invalid_params=['index', 'loader', 'label'])
 
             case 'create' | 'create_only':
-                # These two options require boot entry parameters to be specified and bootnum to NOT be specified
-                check_invalid_params(params=vars(parsed), required_params=['loader', 'label'], invalid_params=['bootnum'])
-                parsed.params = {'disk': parsed.disk, 'part': parsed.part, 'loader': parsed.loader, 'label': parsed.label, 'unicode': parsed.unicode}
+                check_invalid_params(params=params, required_params=['loader', 'label'], invalid_params=['bootnum'])
 
             case _:
-                # All other actions have no required parameters and all others in the list are invalid
-                check_invalid_params(params=vars(parsed), required_params=[], invalid_params=['bootnum', 'loader', 'label'])
-                match parsed.actions[0]:
-                    case 'bootnext': parsed.params = {'bootnext': parsed.bootnext}
-                    case 'bootorder': parsed.params = {'bootorder': parsed.bootorder}
-                    case 'timeout': parsed.params = {'timeout': parsed.timeout}
-                    case _: parsed.params = {}
+                # Remove default params not needed by remaining actions
+                params = {k: v for k, v in params.items() if k not in ['index', 'disk', 'part']}
+                check_invalid_params(params=params, required_params=[], invalid_params=['bootnum', 'loader', 'label'])
+
+        parsed.params = params
 
         return parsed
-
-
-def pyefibootmgr():
-    parser = EfibootmgrArgumentParser()
-
-    args = parser.parse_args()
-
-    # Create the boot manager instance and read from current variables
-    boot_mgr = BootManager()
-    boot_mgr.update_from_efi()
-
-
-    match args.actions[0]:
-        case 'active':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'inactive':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'delete_bootnum':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'create':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'create_only':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'remove_dups':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'bootnext':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'delete-bootnext':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'bootorder':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'delete_bootorder':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'timeout':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case 'delete_timeout':
-            print(f'Execute {args.actions[0]} action with parameters {args.params}')
-        case _:
-            print(f'Unknown action: {args.actions[0]}')
-
-    boot_mgr.display(args.verbose)
-
-
-if __name__ == "__main__":
-    pyefibootmgr()
