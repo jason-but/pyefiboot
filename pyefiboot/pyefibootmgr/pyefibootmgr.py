@@ -132,9 +132,12 @@ class PyEFIBootMgr():
 
         :param verbose: Should we print more information
         """
-        print(f'PLACEHOLDER: Remove duplicate Boot Entries from the BootOrder variable')
-
         if verbose: print(f'Removing duplicate Boot Entries from the BootOrder variable')
+        try: self.__boot_mgr.bootorder_remove_duplicates()
+        except PermissionError as e:
+            raise Exception(f'Could not set BootOrder: {e.strerror}')
+        except (ValueError, TypeError) as e:
+            raise Exception(f'Invalid BootOrder order entry: {e}')
 
     @register_action('bootnext')
     def _set_bootnext(self, bootnext: int, verbose: bool) -> None:
@@ -144,9 +147,12 @@ class PyEFIBootMgr():
         :param bootnext: Integer representing the index of the boot Entry to set as BootNext
         :param verbose: Should we print more information
         """
-        print(f'PLACEHOLDER: Set BootNext EFI variable to be Boot Entry {bootnext:04x}')
-
         if verbose: print(f'Setting BootNext variable to {bootnext:04x}')
+        try: self.__boot_mgr.set_bootnext(bootnext)
+        except PermissionError as e:
+            raise Exception(f'Could not set BootNext: {e.strerror}')
+        except (ValueError, TypeError) as e:
+            raise Exception(f'Invalid BootEntry: {e}')
 
     @register_action('delete_bootnext')
     def _delete_bootnext(self, verbose: bool) -> None:
@@ -155,9 +161,9 @@ class PyEFIBootMgr():
 
         :param verbose: Should we print more information
         """
-        print(f'PLACEHOLDER: Deleting the current BootNext variable')
-
         if verbose: print(f'Deleting the BootNext variable')
+        try: self.__boot_mgr.delete_bootnext()
+        except PermissionError as e: raise Exception(f'Could not set BootNext: {e.strerror}')
 
     @register_action('bootorder')
     def _set_bootorder(self, bootorder: list[int], verbose: bool) -> None:
@@ -167,9 +173,12 @@ class PyEFIBootMgr():
         :param bootorder: List of integers the Boot Order indexes of existing Boot Entries to try on next startup
         :param verbose: Should we print more information
         """
-        print(f'PLACEHOLDER: Set BootOrder EFI variable to be Boot Entries: {','.join(f'{i:04x}' for i in bootorder)} ({bootorder})')
-
         if verbose: print(f'Setting BootNext variable to {bootorder}')
+        try: self.__boot_mgr.set_bootorder(bootorder)
+        except PermissionError as e:
+            raise Exception(f'Could not set BootOrder: {e.strerror}')
+        except (ValueError, TypeError) as e:
+            raise Exception(f'Invalid BootOrder order entry ({','.join(f'{i:04X}' for i in bootorder)}): {e}')
 
     @register_action('delete_bootorder')
     def _delete_bootorder(self, verbose: bool) -> None:
@@ -178,9 +187,9 @@ class PyEFIBootMgr():
 
         :param verbose: Should we print more information
         """
-        print(f'PLACEHOLDER: Deleting the current BootOrder variable')
-
         if verbose: print(f'Deleting the BootOrder variable')
+        try: self.__boot_mgr.delete_bootorder()
+        except PermissionError as e: raise Exception(f'Could not remove entry from BootOrder: {e.strerror}')
 
     @register_action('timeout')
     def _set_timeout(self, timeout: int, verbose: bool) -> None:
@@ -190,9 +199,9 @@ class PyEFIBootMgr():
         :param timeout: Integer representing the number of seconds to set as the timeout value
         :param verbose: Should we print more information
         """
-        print(f'PLACEHOLDER: Set Timeout EFI variable to {timeout} seconds')
-
         if verbose: print(f'Setting Timeout variable to {timeout}')
+        try: self.__boot_mgr.set_timeout(min(timeout, 60))
+        except (PermissionError, ValueError) as e: raise Exception(f'Could not set Timeout: {e.strerror if isinstance(e, PermissionError) else e}')
 
     @register_action('delete_timeout')
     def _delete_timeout(self, verbose: bool) -> None:
@@ -201,9 +210,9 @@ class PyEFIBootMgr():
 
         :param verbose: Should we print more information
         """
-        print(f'PLACEHOLDER: Deleting the current Timeout variable')
-
         if verbose: print(f'Deleting the Timeout variable')
+        try: self.__boot_mgr.delete_timeout()
+        except PermissionError as e: raise Exception(f'Could not delete Timeout: {e.strerror}')
 
     @register_action('No action')
     def _display_boot_settings(self, verbose: bool, **kwargs) -> None:
@@ -219,7 +228,8 @@ class PyEFIBootMgr():
             except KeyError as e:
                 print(f'Requested action "{e}" is currently not implemented')
             except Exception as e:
-                print(f'Other error when executing "{action}" action: {e}')
+                print(e)
+                return
 
 
 def pyefibootmgr():

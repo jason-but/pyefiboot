@@ -3,6 +3,8 @@ This file implements the BootOrder class within the pyefiboot library
 
 BootOrder provides access to the current value of the BootOrder EFI Variable
 """
+from asyncio import current_task
+
 # Import efivar sub-module classes
 from pyefiboot.efivar import EFIVarIntListRW
 
@@ -76,6 +78,12 @@ class BootOrder(EFIVarIntListRW):
 
         self._log.debug(f'Prepending {prepend_list} to the start of the existing Boot Order: {self.value}')
         EFIVarIntListRW.value.fset(self, prepend_list + self._value)
+
+    def remove_duplicate_entries(self) -> None:
+        """Remove all duplicate Boot Entries from the current Boot Order"""
+        self._log.debug(f'{self.efivar_name} EFI value ({self._value}): Removing duplicate values')
+        # noinspection PyPropertyAccess
+        self.value = list(dict.fromkeys(self.value).keys())
 
     def remove_non_existent(self) -> None:
         """Remove all Boot Entry indexes from the current Boot Order where the nominated Index is not a valid Boot Entry Index"""
