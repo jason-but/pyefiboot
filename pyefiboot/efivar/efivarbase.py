@@ -8,6 +8,7 @@ import pathlib
 import struct
 import logging
 
+# Import library configuration module
 from pyefiboot import Configuration
 
 
